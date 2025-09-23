@@ -136,8 +136,8 @@ const handlePlaceOrder = () => {
           <TabsTrigger value="cart">Cart ({{ cartItems.length }})</TabsTrigger>
           <TabsTrigger value="order">Place Order</TabsTrigger>
         </TabsList>
-        <TabsContent value="select-items" class="flex-1 flex flex-col mt-4">
-          <div class="flex-1 overflow-auto">
+        <TabsContent value="select-items" class="flex-1 flex flex-col mt-4 overflow-y-auto">
+          <div>
             <CsvTable
               :initial-data="currentOrderItems"
               :is-order-mode="true"
@@ -147,11 +147,11 @@ const handlePlaceOrder = () => {
             />
           </div>
         </TabsContent>
-        <TabsContent value="cart" class="flex-1 flex flex-col mt-4">
+        <TabsContent value="cart" class="flex-1 flex flex-col mt-4 overflow-y-auto">
           <div v-if="cartItems.length === 0" class="text-center text-muted-foreground py-8">
             Your cart is empty. Add items from the "Select Items" tab.
           </div>
-          <div v-else class="flex-1 overflow-auto">
+          <div v-else>
             <div class="space-y-4">
               <div
                 v-for="item in cartItems"
@@ -216,7 +216,7 @@ const handlePlaceOrder = () => {
             </div>
           </div>
         </TabsContent>
-        <TabsContent value="order" class="flex-1 flex flex-col items-center justify-center mt-4">
+        <TabsContent value="order" class="flex-1 flex flex-col items-center justify-center mt-4 overflow-y-auto">
           <div v-if="cartItems.length === 0" class="text-center text-muted-foreground py-8">
             Your cart is empty. Please add items to place an order.
           </div>
