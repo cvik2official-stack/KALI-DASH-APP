@@ -17,11 +17,17 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Trash2, Pencil } from 'lucide-vue-next';
+import { Trash2, Pencil, ChevronDown } from 'lucide-vue-next'; // Added ChevronDown for dropdown icon
 import AddEditCsvRowDialog from './AddEditCsvRowDialog.vue';
 import { showSuccessToast, showErrorToast, showInfoToast } from '@/lib/toast';
 import Papa from 'papaparse';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'; // Import DropdownMenu components
 
 interface CsvRow {
   [key: string]: string;
@@ -30,7 +36,7 @@ interface CsvRow {
 
 const props = defineProps<{
   initialData: CsvRow[];
-  visibleColumns: string[]; // New prop to control visible columns
+  visibleColumns: string[];
 }>();
 
 const columnHelper = createColumnHelper<CsvRow>();
@@ -56,7 +62,6 @@ watch(
 const columns = computed<ColumnDef<CsvRow, any>[]>(() => {
   if (tableData.value.length === 0) return [];
 
-  // Filter columns based on visibleColumns prop
   const filteredKeys = Object.keys(tableData.value[0]).filter(key => key !== 'id' && props.visibleColumns.includes(key));
 
   const dynamicColumns = filteredKeys.map(key =>
@@ -141,6 +146,10 @@ const table = useVueTable({
   },
 });
 
+const selectedRowCount = computed(() => {
+  return Object.keys(rowSelection.value).filter(key => rowSelection.value[key]).length;
+});
+
 const handleAddRow = () => {
   addEditDialogMode.value = 'add';
   currentEditRow.value = undefined;
@@ -209,13 +218,21 @@ const handleExportCsv = () => {
     <div class="flex justify-between mb-4">
       <Button @click="handleAddRow">Add New Row</Button>
       <div class="flex space-x-2">
-        <Button
-          variant="destructive"
-          :disabled="Object.keys(rowSelection).filter(key => rowSelection[key]).length === 0"
-          @click="handleDeleteSelected"
-        >
-          Delete Selected ({{ Object.keys(rowSelection).filter(key => rowSelection[key]).length }})
-        </Button>
+        <!-- Bulk Actions Dropdown -->
+        <DropdownMenu v-if="selectedRowCount >= 2">
+          <DropdownMenuTrigger as-child>
+            <Button variant="outline">
+              Bulk Actions ({{ selectedRowCount }})
+              <ChevronDown class="ml-2 h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem @click="handleDeleteSelected" class="text-destructive focus:text-destructive">
+              <Trash2 class="mr-2 h-4 w-4" /> Delete Selected
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
         <Button variant="outline" @click="handleExportCsv">Export CSV</Button>
       </div>
     </div>
