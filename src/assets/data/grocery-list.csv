@@ -1,0 +1,212 @@
+Item_name,category,default_supplier
+Dishsoap,🧼Cleaning for kitchen,pisey
+Sponges,🧼Cleaning for kitchen,pisey
+Clothes,🧼Cleaning for kitchen,hong kong shop
+Pasta box,📦Box,pisey
+Pizza box,📦Box,pp distributor
+Bread box,📦Box,Takaway shop
+Soup box,📦Box,pisey
+Cake box,📦Box,Takaway shop
+Sauce box,📦Box,pisey
+Sushi box,📦Box,pp distributor
+Burger box,📦Box,pisey
+Plastic fork,🛍️Ustensil,Takaway shop
+Chopstick,🛍️Ustensil,pisey
+Plastic 12x20,🛍️Plastic bag,pisey
+Plastic 8x16,🛍️Plastic bag,pisey
+Wrapping film,🎁kitchen roll,pizza+
+Baking paper,🎁kitchen roll,pizza+
+Aluminium,🎁kitchen roll,pizza+
+Mozzarella,🧀Cheese,lees
+Cheddar slice,🧀Cheese,baker supplies
+Cream cheese,🧀Cheese,baker supplies
+Cottage cheese,🧀Cheese,granny
+Parmesan,🧀Cheese,lees
+Cooking cream,🥣Cream,lees
+Sour cream,🥣Cream,lees
+Eggs,🥚Eggs,pisey
+Butter,🧈Butter,lees
+French fries,🍟French fries,lees
+Ham,🐷Pork,samu
+Bacon,🐷Pork,samu
+Pepperoni,🐷Pork,samu
+Pork sausage bbq,🐷Pork,rodina
+Pork shoulder bbq,🐷Pork,market
+Beef (burger),🐮 Beef,lees
+Beef (steak),🐮 Beef,lees
+Chicken breast,🐔 Chicken,market
+Chicken wing,🐔 Chicken,market
+Chicken sausage bbq,🐔 Chicken,market
+Smoked chicken sausage,🐔 Chicken,rodina
+Smoked duck breast,🐔 Chicken,lees
+White fish,🐟Fish,market
+Bar fish,🐟Fish,market
+Red fish,🐟Fish,market
+Salmon fish,🐟Fish,chanorai
+Squid,🦞Seafood,market
+Shrimp,🦞Seafood,market
+Fish roe,🦞Seafood,pizza+
+Crab stick,🦞Seafood,foody
+Onion pickles,🥒Picked,samu
+Capers,🥒Picked,foody
+Black & green olives,🥒Picked,foody
+Gherkins,🥒Picked,pisey
+Pink ginger,🥒Picked,chanorai
+Wasabi,🥒Picked,pizza+
+Rice,🍚Rice,pisey
+Japanese rice,🍚Rice,pizza+
+Buckwheat,🍚Rice,pp distributor
+Yellow noodles,🍜Noodle,pisey
+Spaghetti,🍝Noodle,pisey
+🥟 dumpling dough,🍞Baking,chinese mart
+🍕 pizza dough/flour,🍞Baking,pisey
+🍤 tempura flour,🍞Baking,pisey
+🍞 yeast,🍞Baking,pisey
+🍤 breadcrumbs,🍞Baking,pisey
+🍔 bun's (burger bread),🍞Baking,baker
+🫓 lavash,🍞Baking,baker
+Green peas,🥫Can,pisey
+Mushroom can,🥫Can,pisey
+Peeled tomato,🥫Can,pisey
+Tomato paste,🥫Can,pisey
+Black & white sesame,🌿Herbs & spices,foody
+Rosemary,🌿Herbs & spices,foody
+Bay leaf,🌿Herbs & spices,foody
+Seaweed,🌿Herbs & spices,chanorai
+Salt,🧂Seasoning,pisey
+Sugar,🧂Seasoning,pisey
+Knorr cubes,🧂Seasoning,pisey
+Knorr powder,🧂Seasoning,pisey
+Black pepper,🧂Seasoning,pisey
+Cooking oil,🧂Seasoning,pisey
+Olive oil,🧂Seasoning,sara
+Oyster sauce,🫙Sauce,pisey
+Sweet chili sauce,🫙Sauce,pisey
+Ketchup big,🫙Sauce,pisey
+White vinegar (chinese),🫙Sauce,pisey
+Vinegar (thai),🫙Sauce,pisey
+Fish sauce,🫙Sauce,pisey
+Khmer soy sauce,🫙Sauce,pisey
+Teryaki sauce,🫙Sauce,chanorai
+Kikkoman big,🫙Sauce,chanorai
+Mayonnaise,🫙Sauce,sara
+Potato,🥦Veg,pisey
+Tomato,🥦Veg,pisey
+Iceberg,🥦Veg,pisey
+Cucumber long,🥦Veg,pisey
+Onion,🥦Veg,pisey
+Yellow bellpepper,🥦Veg,pisey
+Red bellpepper,🥦Veg,pisey
+Carrot,🥦Veg,pisey
+Cabbage,🥦Veg,pisey
+Broccoli,🥦Veg,pisey
+Avocado,🥦Veg,pisey
+Mushroom,🥦Veg,pisey
+Aubergine,🥦Veg,pisey
+Zuchini,🥦Veg,pisey
+Garlic white,🥦Veg,pisey
+Red onion,🥦Veg,pisey
+Shallots,🥦Veg,pisey
+Basil,🌿Herbs (fresh),pisey
+Coriander,🌿Herbs (fresh),pisey
+Parsley,🌿Herbs (fresh),pisey
+Coca,🥤Sodas,coca company
+Coca zero,🥤Sodas,coca company
+Soda,🥤Sodas,coca company
+Sprite,🥤Sodas,coca company
+Fanta,🥤Sodas,coca company
+Tonic,🥤Sodas,coca company
+Aquarius,🥤Sodas,coca company
+Ginger ale,🥤Sodas,coca company
+Pepsi,🥤Sodas,drink shop
+Puro big,💧Water,angkor company
+Puro small,💧Water,angkor company
+Blue sea big,💧Water,stock
+Blue sea small,💧Water,stock
+Mango juice,🧃Fruit juices,lees
+Orange juice,🧃Fruit juices,lees
+Cranberry juice,🧃Fruit juices,lees
+Apple juice,🧃Fruit juices,lees
+Caramel,🧋Syrup,kofi
+Vanilla,🧋Syrup,kofi
+Grenadine,🧋Syrup,kofi
+Strawberry,🧋Syrup,kofi
+Lemon,🧋Syrup,kofi
+Mint,🧋Syrup,kofi
+Coffee oro,☕Coffee,kofi
+Fresh milk,🥛Milk,baker supplies
+Sweet milk,🥛Milk,pisey
+Almond milk,🥛Milk,7 eleven
+Black tea,🫖Tea,chinese mart
+Green tea,🫖Tea,chinese mart
+Jasmine tea,🫖Tea,chinese mart
+Draft keg,🍺Beers,angkor company
+Angkor,🍺Beers,angkor company
+Cambodia,🍺Beers,drink shop
+Ganzberg,🍺Beers,drink shop
+Somersby cider,🍺Beers,pp distributor
+Ipa,🍺Beers,pp distributor
+Blanc 1664,🍺Beers,pp distributor
+Corona,🍺Beers,pp distributor
+Red wine,🍷Wines,foody
+White wine,🍷Wines,foody
+Jinro,🍷Wines,foody
+Winston,🚬Cigs,drink shop
+Esse,🚬Cigs,drink shop
+Mevius,🚬Cigs,drink shop
+Jack,🥃Spirits,samu
+Jagermeister,🥃Spirits,samu
+Tequila,🥃Spirits,samu
+Absolut,🥃Spirits,samu
+Bacardi,🥃Spirits,samu
+Bailey,🥃Spirits,samu
+Beefeater,🥃Spirits,samu
+Campari,🥃Spirits,samu
+Captain morgan,🥃Spirits,samu
+Cointreau,🥃Spirits,samu
+Jameson,🥃Spirits,samu
+Jim beam,🥃Spirits,samu
+Malibu,🥃Spirits,samu
+Bardinet,🥃Spirits,samu
+Blue curacao,🥃Spirits,samu
+Peach,🥃Spirits,samu
+🍋‍🟩 lime,🍑Fruits,pisey
+🥭 mango,🍑Fruits,pisey
+🐉 dragon,🍑Fruits,pisey
+🍊 orange,🍑Fruits,pisey
+🍌 banana,🍑Fruits,pisey
+🍊 mandarin,🍑Fruits,pisey
+🌿 mint,🍑Fruits,pisey
+🍋 lemon,🍑Fruits,pisey
+🍉 watermelon,🍑Fruits,pisey
+🍏 apple,🍑Fruits,pisey
+Sweet milk,🍨Desserts,pisey
+Chocolate topping,🍨Desserts,pisey
+Sugar sachet,🍨Desserts,pisey
+Honey,🍨Desserts,pisey
+Whipping cream,🍨Desserts,foody
+Vanilla ice cream,🍨Desserts,foody
+Strawberry ice cream,🍨Desserts,foody
+Frozen strawberries,🍨Desserts,chanorai
+4*14,🛍️Plastic bag,Takaway shop
+Trash bag,🛍️Plastic bag,pisey
+"Cup small 16""",🛍️Cup,Takaway shop
+"Cup big 22""",🛍️Cup,Takaway shop
+Cup coffee,🛍️Cup,pp distributor
+Straw big,🛍️Ustensils,baker supplies
+Straw small,🛍️Ustensils,baker supplies
+Napkin small,🛍️Ustensils,savuth
+Napkin big,🛍️Ustensils,savuth
+Toothpick,🛍️Ustensils,Takaway shop
+Printer paper,🖨️Office,stock
+Strapples,🖨️Office,ebc
+Pens,🖨️Office,ebc
+Glass cleaner,🧼Cleaning,pisey
+Floor cleaner,🧼Cleaning,pisey
+Duck toilet,🧼Cleaning,pisey
+Peepee pads,🧼Cleaning,kitchen equipment
+Toilet paper roll,🧼Cleaning,pisey
+Hand towel napkin,🧼Cleaning,pisey
+Hand soap,🧼Cleaning,pisey
+Perfume atomizer,🧼Cleaning,pisey
+Hand sanitizer,🧼Cleaning,pisey
