@@ -16,26 +16,29 @@ import { showErrorToast } from '@/lib/toast';
 interface Props {
   open: boolean;
   mode: 'add' | 'edit';
-  initialData?: Record<string, string | number>; // Updated type
+  initialData?: Record<string, string | number>;
   columns: string[];
 }
 
 const props = defineProps<Props>();
-const emit = defineEmits(['update:open', 'save']);
+const emit = emit('update:open', 'save');
 
 const localOpen = computed({
   get: () => props.open,
   set: (value) => emit('update:open', value),
 });
 
-const formData = ref<Record<string, string | number>>({}); // Updated type
+const formData = ref<Record<string, string | number>>({});
 
 watch(
   () => props.open,
   (newVal) => {
     if (newVal) {
       if (props.mode === 'edit' && props.initialData) {
-        formData.value = { ...props.initialData };
+        // Convert all values to string for input binding
+        formData.value = Object.fromEntries(
+          Object.entries(props.initialData).map(([key, value]) => [key, String(value)])
+        );
       } else {
         formData.value = props.columns.reduce((acc, col) => ({ ...acc, [col]: '' }), {});
       }
@@ -45,7 +48,7 @@ watch(
 );
 
 const handleSave = () => {
-  if (!formData.value.NAME || String(formData.value.NAME).trim() === '') { // Ensure NAME is string for trim
+  if (!formData.value.NAME || String(formData.value.NAME).trim() === '') {
     showErrorToast('Item Name cannot be empty.');
     return;
   }

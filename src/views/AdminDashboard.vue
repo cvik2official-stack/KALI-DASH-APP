@@ -31,8 +31,9 @@ onMounted(async () => {
     showSuccessToast('CSV data loaded successfully!');
   } catch (e: any) {
     // Ensure e.message is treated as a string
-    error.value = (e instanceof Error ? e.message : String(e)) || 'Failed to load CSV data.';
-    showErrorToast(error.value);
+    const errorMessage = (e instanceof Error ? e.message : String(e)) || 'Failed to load CSV data.';
+    error.value = errorMessage;
+    showErrorToast(errorMessage); // Pass the string directly
   } finally {
     isLoading.value = false;
   }

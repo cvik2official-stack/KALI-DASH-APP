@@ -140,7 +140,7 @@ const table = useVueTable({
   },
   getCoreRowModel: getCoreRowModel(),
   state: {
-    columnVisibility: columnVisibility.value, // Unwrap the ref here
+    columnVisibility, // Pass the ref directly
   },
   onColumnVisibilityChange: updater => {
     columnVisibility.value =
@@ -165,9 +165,9 @@ const handleDelete = (name: string) => {
   showSuccessToast('Row deleted successfully!');
 };
 
-const handleSaveRow = (newRowData: Record<string, string | number>) => { // Updated type
+const handleSaveRow = (newRowData: Record<string, string | number>) => {
   if (addEditDialogMode.value === 'add') {
-    if (!newRowData.NAME || String(newRowData.NAME).trim() === '') { // Ensure NAME is string for trim
+    if (!newRowData.NAME || String(newRowData.NAME).trim() === '') {
       showErrorToast('Item Name is required to add a new row.');
       return;
     }
@@ -175,7 +175,7 @@ const handleSaveRow = (newRowData: Record<string, string | number>) => { // Upda
       showErrorToast('An item with this name already exists.');
       return;
     }
-    tableData.value.push({ ...newRowData, NAME: String(newRowData.NAME) }); // Ensure NAME is string
+    tableData.value.push({ ...newRowData, NAME: String(newRowData.NAME) });
     showSuccessToast('Row added successfully!');
   } else if (addEditDialogMode.value === 'edit' && currentEditRow.value) {
     const index = tableData.value.findIndex(row => row.NAME === currentEditRow.value?.NAME);
@@ -184,7 +184,7 @@ const handleSaveRow = (newRowData: Record<string, string | number>) => { // Upda
         showErrorToast('An item with this name already exists.');
         return;
       }
-      tableData.value[index] = { ...newRowData, NAME: String(newRowData.NAME) }; // Ensure NAME is string
+      tableData.value[index] = { ...newRowData, NAME: String(newRowData.NAME) };
       showSuccessToast('Row updated successfully!');
     } else {
       showErrorToast('Failed to update row.');
