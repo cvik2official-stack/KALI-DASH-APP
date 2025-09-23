@@ -16,11 +16,9 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Trash2, Pencil } from 'lucide-vue-next'; // Removed Settings2 and MoreHorizontal
+import { Trash2, Pencil } from 'lucide-vue-next';
 import AddEditCsvRowDialog from './AddEditCsvRowDialog.vue';
 import { showSuccessToast, showErrorToast, showInfoToast } from '@/lib/toast';
-// Removed DropdownMenu imports as they are no longer needed for column visibility
-import { Checkbox } from '@/components/ui/checkbox';
 import Papa from 'papaparse';
 
 interface CsvRow {
@@ -65,22 +63,6 @@ const columns = computed<ColumnDef<CsvRow, any>[]>(() => {
   );
 
   return [
-    columnHelper.display({
-      id: 'select',
-      header: ({ table }) =>
-        h(Checkbox, {
-          checked: table.getIsAllRowsSelected(),
-          'onUpdate:checked': value => table.toggleAllRowsSelected(!!value),
-          ariaLabel: 'Select all',
-        }),
-      cell: ({ row }) =>
-        h(Checkbox, {
-          checked: row.getIsSelected(),
-          'onUpdate:checked': value => row.toggleSelected(!!value),
-          ariaLabel: 'Select row',
-        }),
-      enableHiding: false, // Hiding is no longer supported without the UI
-    }),
     ...dynamicColumns,
     columnHelper.display({
       id: 'actions',
@@ -123,7 +105,6 @@ const table = useVueTable({
     return columns.value;
   },
   getCoreRowModel: getCoreRowModel(),
-  // Removed columnVisibility state and onColumnVisibilityChange as the feature is removed
 });
 
 const handleAddRow = () => {
@@ -181,7 +162,6 @@ const handleExportCsv = () => {
     <div class="flex justify-between mb-4">
       <Button @click="handleAddRow">Add New Row</Button>
       <div class="flex space-x-2">
-        <!-- Removed DropdownMenu for View Columns -->
         <Button variant="outline" @click="handleExportCsv">Export CSV</Button>
       </div>
     </div>
@@ -204,7 +184,6 @@ const handleExportCsv = () => {
             <TableRow
               v-for="row in table.getRowModel().rows"
               :key="row.id"
-              :data-state="row.getIsSelected() && 'selected'"
             >
               <TableCell v-for="cell in row.getVisibleCells()" :key="cell.id">
                 <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
