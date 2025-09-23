@@ -76,16 +76,19 @@ const handleItemRemovedFromCart = (item: CsvRow) => {
       </div>
     </div>
     
-    <Tabs default-value="order-items" class="flex-1 flex flex-col">
-      <TabsList class="grid w-full grid-cols-2">
-        <TabsTrigger value="order-items">
-          Order Items
+    <Tabs default-value="select-items" class="flex-1 flex flex-col">
+      <TabsList class="grid w-full grid-cols-3"> <!-- Changed to 3 columns for 3 tabs -->
+        <TabsTrigger value="select-items">
+          Select Items
         </TabsTrigger>
         <TabsTrigger value="cart">
           Cart ({{ cartItems.length }})
         </TabsTrigger>
+        <TabsTrigger value="order"> <!-- New Order Tab -->
+          Order
+        </TabsTrigger>
       </TabsList>
-      <TabsContent value="order-items" class="flex-1 flex flex-col mt-4">
+      <TabsContent value="select-items" class="flex-1 flex flex-col mt-4">
         <div v-if="isLoading" class="text-xl text-gray-600 dark:text-gray-300 text-center">Loading data...</div>
         <div v-else-if="error" class="text-xl text-red-600 dark:text-red-400 text-center">Error: {{ error }}</div>
         <div v-else-if="csvData.length > 0" class="w-full max-w-4xl mx-auto flex-1">
@@ -104,6 +107,13 @@ const handleItemRemovedFromCart = (item: CsvRow) => {
           <h3 class="text-xl font-semibold mb-4">Your Cart</h3>
           <p v-if="cartItems.length === 0" class="text-muted-foreground">Your cart is empty.</p>
           <!-- CartTable component will go here -->
+        </div>
+      </TabsContent>
+      <TabsContent value="order" class="flex-1 flex flex-col mt-4"> <!-- Content for the new Order Tab -->
+        <div class="w-full max-w-4xl mx-auto">
+          <h3 class="text-xl font-semibold mb-4">Order History</h3>
+          <p class="text-muted-foreground">No orders placed yet.</p>
+          <!-- Order history table will go here -->
         </div>
       </TabsContent>
     </Tabs>

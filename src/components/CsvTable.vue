@@ -20,15 +20,15 @@ import { Trash2, Pencil } from 'lucide-vue-next';
 import AddEditCsvRowDialog from './AddEditCsvRowDialog.vue';
 import { showSuccessToast, showErrorToast, showInfoToast } from '@/lib/toast';
 import Papa from 'papaparse';
-
-interface CsvRow {
-  [key: string]: string;
-  id: string; // Add an ID for unique identification
-}
+import type { CsvRow, CartItem } from '@/types'; // Import CsvRow and CartItem
 
 const props = defineProps<{
   initialData: CsvRow[];
+  isOrderMode: boolean; // New prop for order mode
+  cartItems: CartItem[]; // New prop for cart items
 }>();
+
+const emit = defineEmits(['item-added-to-cart', 'item-removed-from-cart']); // Define emits
 
 const columnHelper = createColumnHelper<CsvRow>();
 
@@ -67,8 +67,42 @@ const columns = computed<ColumnDef<CsvRow, any>[]>(() => {
     })
   );
 
+  // If in order mode, filter out the 'supplier' column and add a checkbox
+  if (props.isOrderMode) {
+    const filteredColumns = dynamicColumns.filter(col => {
+      // Assuming 'supplier' is the key for the supplier column
+      const accessorKey = (col.columnDef as any).accessorKey;
+      return accessorKey !== 'supplier';
+    });
+
+    return [
+      columnHelper.display({
+        id: 'select',
+        header: ({ table }) => h('div', { class: 'text-center' }, 'Select'),
+        cell: ({ row }) => {
+          const isSelected = props.cartItems.some(item => item.id === row.original.id);
+          return h('input', {
+            type: 'checkbox',
+            checked: isSelected,
+            class: 'form-checkbox h-4 w-4 text-primary rounded',
+            onChange: (event: Event) => {
+              const target = event.target as HTMLInputElement;
+              if (target.checked) {
+                emit('item-added-to-cart', row.original);
+              } else {
+                emit('item-removed-from-cart', row.original);
+              }
+            },
+          });
+        },
+        enableHiding: false,
+      }),
+      ...filteredColumns,
+    ];
+  }
+
+  // Default columns for non-order mode
   return [
-    // Removed the 'select' column as it's not needed without the view columns button
     ...dynamicColumns,
     columnHelper.display({
       id: 'actions',
@@ -174,10 +208,9 @@ const handleExportCsv = () => {
 <template>
   <div class="w-full">
     <div class="flex justify-between mb-4">
-      <Button @click="handleAddRow">Add New Row</Button>
+      <Button v-if="!isOrderMode" @click="handleAddRow">Add New Row</Button>
       <div class="flex space-x-2">
-        <!-- Removed DropdownMenu for View Columns -->
-        <Button variant="outline" @click="handleExportCsv">Export CSV</Button>
+        <Button v-if="!isOrderMode" variant="outline" @click="handleExportCsv">Export CSV</Button>
       </div>
     </div>
 
