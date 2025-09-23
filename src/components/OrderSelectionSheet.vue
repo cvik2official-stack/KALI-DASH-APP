@@ -122,7 +122,7 @@ const handlePlaceOrder = () => {
 
 <template>
   <Sheet v-model:open="localOpen">
-    <SheetContent side="right" class="w-full sm:max-w-xl flex flex-col">
+    <SheetContent side="right" class="w-full sm:max-w-xl flex flex-col h-full">
       <SheetHeader>
         <SheetTitle>Create New Order</SheetTitle>
         <SheetDescription>
