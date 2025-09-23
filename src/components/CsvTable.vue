@@ -6,6 +6,7 @@ import {
   useVueTable,
   createColumnHelper,
   type ColumnDef,
+  type AccessorColumnDef, // Import AccessorColumnDef for type checking
 } from '@tanstack/vue-table';
 import {
   Table,
@@ -16,7 +17,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Trash2, Pencil } from 'lucide-vue-next'; 
+import { Trash2, Pencil } from 'lucide-vue-next';
 import AddEditCsvRowDialog from './AddEditCsvRowDialog.vue';
 import { showSuccessToast, showErrorToast, showInfoToast } from '@/lib/toast';
 import Papa from 'papaparse';
@@ -70,15 +71,16 @@ const columns = computed<ColumnDef<CsvRow, any>[]>(() => {
   // If in order mode, filter out the 'supplier' column and add a checkbox
   if (props.isOrderMode) {
     const filteredColumns = dynamicColumns.filter(col => {
-      // Assuming 'supplier' is the key for the supplier column
-      const accessorKey = (col.columnDef as any).accessorKey;
-      return accessorKey !== 'supplier';
+      // Check if the column has an accessorKey and if it's 'supplier'
+      // 'col' is already a ColumnDef object here.
+      // We need to ensure it's an AccessorColumnDef to safely access accessorKey.
+      return !('accessorKey' in col && col.accessorKey === 'supplier');
     });
 
     return [
       columnHelper.display({
         id: 'select',
-        header: ({ table }) => h('div', { class: 'text-center' }, 'Select'),
+        header: () => h('div', { class: 'text-center' }, 'Select'),
         cell: ({ row }) => {
           const isSelected = props.cartItems.some(item => item.id === row.original.id);
           return h('input', {
@@ -259,3 +261,4 @@ const handleExportCsv = () => {
     />
   </div>
 </template>
+</script>
