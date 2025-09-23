@@ -30,7 +30,8 @@ onMounted(async () => {
     csvData.value = data as CsvRow[]; // Directly assign data, assuming NAME is present
     showSuccessToast('CSV data loaded successfully!');
   } catch (e: any) {
-    error.value = e.message || 'Failed to load CSV data.';
+    // Ensure e.message is treated as a string
+    error.value = (e instanceof Error ? e.message : String(e)) || 'Failed to load CSV data.';
     showErrorToast(error.value);
   } finally {
     isLoading.value = false;

@@ -140,7 +140,7 @@ const table = useVueTable({
   },
   getCoreRowModel: getCoreRowModel(),
   state: {
-    columnVisibility,
+    columnVisibility: columnVisibility.value, // Unwrap the ref here
   },
   onColumnVisibilityChange: updater => {
     columnVisibility.value =
@@ -165,9 +165,9 @@ const handleDelete = (name: string) => {
   showSuccessToast('Row deleted successfully!');
 };
 
-const handleSaveRow = (newRowData: Record<string, string>) => {
+const handleSaveRow = (newRowData: Record<string, string | number>) => { // Updated type
   if (addEditDialogMode.value === 'add') {
-    if (!newRowData.NAME || newRowData.NAME.trim() === '') {
+    if (!newRowData.NAME || String(newRowData.NAME).trim() === '') { // Ensure NAME is string for trim
       showErrorToast('Item Name is required to add a new row.');
       return;
     }
@@ -175,16 +175,16 @@ const handleSaveRow = (newRowData: Record<string, string>) => {
       showErrorToast('An item with this name already exists.');
       return;
     }
-    tableData.value.push({ ...newRowData, NAME: newRowData.NAME });
+    tableData.value.push({ ...newRowData, NAME: String(newRowData.NAME) }); // Ensure NAME is string
     showSuccessToast('Row added successfully!');
   } else if (addEditDialogMode.value === 'edit' && currentEditRow.value) {
     const index = tableData.value.findIndex(row => row.NAME === currentEditRow.value?.NAME);
     if (index !== -1) {
-      if (newRowData.NAME !== currentEditRow.value.NAME && tableData.value.some((row, i) => i !== index && row.NAME === newRowData.NAME)) {
+      if (String(newRowData.NAME) !== currentEditRow.value.NAME && tableData.value.some((row, i) => i !== index && row.NAME === newRowData.NAME)) {
         showErrorToast('An item with this name already exists.');
         return;
       }
-      tableData.value[index] = { ...newRowData, NAME: newRowData.NAME };
+      tableData.value[index] = { ...newRowData, NAME: String(newRowData.NAME) }; // Ensure NAME is string
       showSuccessToast('Row updated successfully!');
     } else {
       showErrorToast('Failed to update row.');
