@@ -56,22 +56,38 @@ watch(
 const columns = computed<ColumnDef<CsvRow, any>[]>(() => {
   if (tableData.value.length === 0) return [];
 
-  const firstRowKeys = Object.keys(tableData.value[0]).filter(key => key !== 'id');
+  const allKeys = Object.keys(tableData.value[0]);
+  const idKey = 'id';
+  const defaultSupplierKey = 'default_supplier';
 
-  const dynamicColumns = firstRowKeys.map(key =>
-    columnHelper.accessor(key, {
+  // Find the best key for the item name, prioritizing 'name' or 'item_name'
+  const nameColumnKey = allKeys.find(key => key.toLowerCase() === 'name' || key.toLowerCase() === 'item_name');
+
+  const orderedDynamicColumns: ColumnDef<CsvRow, any>[] = [];
+
+  // 1. Add the name column if found
+  if (nameColumnKey) {
+    orderedDynamicColumns.push(columnHelper.accessor(nameColumnKey, {
+      header: () => nameColumnKey.replace(/_/g, ' ').toUpperCase(),
+      cell: info => h('div', { class: 'text-left font-medium' }, info.getValue()),
+      enableHiding: true,
+    }));
+  }
+
+  // 2. Add other columns, excluding id, default_supplier, and the nameColumnKey (if already added)
+  const remainingKeys = allKeys.filter(key =>
+    key !== idKey && key !== defaultSupplierKey && key !== nameColumnKey
+  );
+
+  remainingKeys.forEach(key => {
+    orderedDynamicColumns.push(columnHelper.accessor(key, {
       header: () => key.replace(/_/g, ' ').toUpperCase(),
       cell: info => h('div', { class: 'text-left' }, info.getValue()),
       enableHiding: true,
-    })
-  );
+    }));
+  });
 
   if (props.isOrderMode) {
-    const filteredColumns = dynamicColumns.filter(col => {
-      // Correctly filter out the 'default_supplier' column
-      return !('accessorKey' in col && col.accessorKey === 'default_supplier');
-    });
-
     return [
       columnHelper.display({
         id: 'select',
@@ -94,12 +110,22 @@ const columns = computed<ColumnDef<CsvRow, any>[]>(() => {
         },
         enableHiding: false,
       }),
-      ...filteredColumns,
+      ...orderedDynamicColumns, // Use the newly ordered columns
     ];
   }
 
+  // For non-order mode, we still want to show all relevant columns and actions
+  const nonOrderModeDisplayKeys = allKeys.filter(key => key !== idKey);
+  const nonOrderModeColumns = nonOrderModeDisplayKeys.map(key =>
+    columnHelper.accessor(key, {
+      header: () => key.replace(/_/g, ' ').toUpperCase(),
+      cell: info => h('div', { class: 'text-left' }, info.getValue()),
+      enableHiding: true,
+    })
+  );
+
   return [
-    ...dynamicColumns,
+    ...nonOrderModeColumns,
     columnHelper.display({
       id: 'actions',
       header: () => 'Actions',
