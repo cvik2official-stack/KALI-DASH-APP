@@ -7,6 +7,7 @@ import { showInfoToast, showErrorToast, showSuccessToast } from '@/lib/toast';
 import {
   Sheet,
   SheetTrigger,
+  SheetContent,
 } from '@/components/ui/sheet';
 import { Menu } from 'lucide-vue-next';
 import MenuPanel from '@/components/MenuPanel.vue';
@@ -73,8 +74,8 @@ const handleCreateOrder = () => {
       <div v-else-if="csvData.length > 0" class="w-full max-w-4xl mx-auto flex-1">
         <CsvTable
           :initial-data="csvData"
-          :is-order-mode="false" <!-- Always false for the main table -->
-          :cart-items="[]" <!-- No cart items for the main table -->
+          :is-order-mode="false"
+          :cart-items="[]"
         />
       </div>
       <div v-else class="text-xl text-gray-600 dark:text-gray-300 text-center">No CSV data available.</div>
