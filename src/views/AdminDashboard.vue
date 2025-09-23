@@ -12,11 +12,17 @@ import {
 } from '@/components/ui/sheet';
 import { Menu } from 'lucide-vue-next';
 import MenuPanel from '@/components/MenuPanel.vue';
+import {
+  Menubar,
+  MenubarMenu,
+  MenubarTrigger,
+  MenubarContent,
+  MenubarItem,
+  MenubarSeparator,
+} from '@/components/ui/menubar'; // Import Menubar components
 
-// Removed ResizablePanelGroup imports as they are no longer needed
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ColumnSettings from '@/components/ColumnSettings.vue';
-// Removed useIsMobile as the menu behavior will be consistent across all sizes
 
 interface CsvRow {
   [key: string]: string;
@@ -64,11 +70,11 @@ const visibleColumns = computed(() => {
 
 <template>
   <div class="flex flex-col min-h-full">
-    <!-- Header with Sheet Trigger (always visible) -->
+    <!-- Header with Sheet Trigger and Menubar -->
     <header class="w-full flex items-center p-4 border-b">
       <Sheet v-model:open="isMenuOpen">
         <SheetTrigger as-child>
-          <Button variant="outline" size="icon">
+          <Button variant="outline" size="icon" class="mr-4">
             <Menu class="h-4 w-4" />
             <span class="sr-only">Open menu</span>
           </Button>
@@ -77,13 +83,42 @@ const visibleColumns = computed(() => {
           <MenuPanel />
         </SheetContent>
       </Sheet>
-      <h1 class="text-2xl font-bold flex-1 text-center">Admin Dashboard</h1>
+
+      <Menubar class="flex-1 justify-center border-none">
+        <MenubarMenu>
+          <MenubarTrigger>File</MenubarTrigger>
+          <MenubarContent>
+            <MenubarItem>New Tab</MenubarItem>
+            <MenubarItem>New Window</MenubarItem>
+            <MenubarSeparator />
+            <MenubarItem>Print</MenubarItem>
+          </MenubarContent>
+        </MenubarMenu>
+        <MenubarMenu>
+          <MenubarTrigger>Edit</MenubarTrigger>
+          <MenubarContent>
+            <MenubarItem>Undo</MenubarItem>
+            <MenubarItem>Redo</MenubarItem>
+            <MenubarSeparator />
+            <MenubarItem>Cut</MenubarItem>
+            <MenubarItem>Copy</MenubarItem>
+            <MenubarItem>Paste</MenubarItem>
+          </MenubarContent>
+        </MenubarMenu>
+        <MenubarMenu>
+          <MenubarTrigger>View</MenubarTrigger>
+          <MenubarContent>
+            <MenubarItem>Toggle Fullscreen</MenubarItem>
+            <MenubarItem>Zoom In</MenubarItem>
+            <MenubarItem>Zoom Out</MenubarItem>
+          </MenubarContent>
+        </MenubarMenu>
+      </Menubar>
     </header>
 
     <!-- Main Content Area -->
     <main class="flex-1 flex flex-col p-4">
-      <h1 class="text-4xl font-bold mb-6 text-center">Admin Dashboard</h1>
-      <p class="text-lg mb-8 text-center">Manage your CSV data below.</p>
+      <!-- Removed the large "Admin Dashboard" text and descriptive paragraph -->
 
       <Tabs default-value="dataTable" class="flex-1 flex flex-col">
         <TabsList class="grid w-full grid-cols-2">
