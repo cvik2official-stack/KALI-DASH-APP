@@ -19,7 +19,7 @@ import {
 </script>
 
 <template>
-  <aside class="w-64 bg-sidebar text-sidebar-foreground p-4 flex flex-col border-r border-sidebar-border">
+  <aside class="bg-sidebar text-sidebar-foreground p-4 flex flex-col border-r border-sidebar-border h-full">
     <div class="mb-6 text-center">
       <h2 class="text-2xl font-bold text-sidebar-primary-foreground">DASHBOT</h2>
       <p class="text-sm text-sidebar-foreground">by Kali System</p>
