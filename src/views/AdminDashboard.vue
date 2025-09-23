@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'; // Import watch
+import { ref, onMounted } from 'vue';
 import { Button } from '@/components/ui/button';
 import { loadCsvData } from '@/lib/csvUtils';
 import CsvTable from '@/components/CsvTable.vue';
@@ -37,10 +37,11 @@ onMounted(async () => {
   }
 });
 
-// Watch for changes in isOrderMode for debugging
-watch(isOrderMode, (newVal) => {
-  console.log('Order Mode changed to:', newVal);
-});
+// Explicit handler for the order mode switch
+const handleOrderModeToggle = (checked: boolean) => {
+  isOrderMode.value = checked;
+  console.log('Order Mode toggled to:', isOrderMode.value); // Log the new state
+};
 
 // Handlers for cart actions (will be passed to CsvTable)
 const handleItemAddedToCart = (item: CsvRow) => {
@@ -77,13 +78,14 @@ const handleItemRemovedFromCart = (item: CsvRow) => {
 
       <div class="flex items-center space-x-2">
         <Label for="order-mode-switch">Order Mode</Label>
-        <Switch id="order-mode-switch" v-model:checked="isOrderMode" />
+        <Switch
+          id="order-mode-switch"
+          :checked="isOrderMode"
+          @update:checked="handleOrderModeToggle"
+        />
       </div>
     </div>
     
-    <!-- Debugging text to show current order mode state -->
-    <p class="mb-4 text-sm text-muted-foreground">Order Mode is: {{ isOrderMode }}</p>
-
     <Tabs v-if="isOrderMode" default-value="select-items" class="flex-1 flex flex-col">
       <TabsList class="grid w-full grid-cols-3">
         <TabsTrigger value="select-items">
