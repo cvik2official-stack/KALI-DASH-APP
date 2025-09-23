@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router';
 import MadeWithDyad from './components/MadeWithDyad.vue';
+import { Toaster } from '@/components/ui/sonner';
 </script>
 
 <template>
   <div class="app-layout">
     <RouterView />
     <MadeWithDyad />
+    <Toaster />
   </div>
 </template>
 

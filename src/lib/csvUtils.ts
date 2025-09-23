@@ -1,4 +1,4 @@
-import Papa, { type ParseResult } from 'papaparse';
+import Papa from 'papaparse';
 
 interface CsvRow {
   [key: string]: string;
@@ -16,12 +16,12 @@ export async function loadCsvData(filePath: string): Promise<CsvRow[]> {
       Papa.parse(csvText, {
         header: true,
         skipEmptyLines: true,
-        complete: (results: ParseResult<CsvRow>) => {
+        complete: (results: Papa.ParseResult<CsvRow>) => {
           if (results.errors.length) {
             console.error('CSV parsing errors:', results.errors);
             reject(new Error('Failed to parse CSV.'));
           } else {
-            resolve(results.data);
+            resolve(results.data as CsvRow[]);
           }
         },
         error: (err: Error) => {
