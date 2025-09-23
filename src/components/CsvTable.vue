@@ -6,7 +6,6 @@ import {
   useVueTable,
   createColumnHelper,
   type ColumnDef,
-  getFilteredRowModel,
 } from '@tanstack/vue-table';
 import {
   Table,
@@ -17,26 +16,28 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Trash2, Pencil, ChevronDown } from 'lucide-vue-next'; // Added ChevronDown for dropdown icon
+import { Trash2, Pencil, Settings2 } from 'lucide-vue-next'; // Removed MoreHorizontal
 import AddEditCsvRowDialog from './AddEditCsvRowDialog.vue';
 import { showSuccessToast, showErrorToast, showInfoToast } from '@/lib/toast';
-import Papa from 'papaparse';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'; // Import DropdownMenu components
+} from '@/components/ui/dropdown-menu';
+import { Checkbox } from '@/components/ui/checkbox';
+import Papa from 'papaparse';
 
 interface CsvRow {
   [key: string]: string;
-  id: string;
+  id: string; // Add an ID for unique identification
 }
 
 const props = defineProps<{
   initialData: CsvRow[];
-  visibleColumns: string[];
 }>();
 
 const columnHelper = createColumnHelper<CsvRow>();
@@ -45,30 +46,34 @@ const tableData = ref<CsvRow[]>([]);
 const isAddEditDialogOpen = ref(false);
 const addEditDialogMode = ref<'add' | 'edit'>('add');
 const currentEditRow = ref<CsvRow | undefined>(undefined);
-const rowSelection = ref({});
 
+// Reactive state for column visibility
+const columnVisibility = ref<Record<string, boolean>>({
+  select: false, // Hide checkbox column by default
+});
+
+// Watch for changes in initialData and update tableData reactively
 watch(
   () => props.initialData,
   (newVal) => {
     tableData.value = newVal.map((row, index) => ({
       ...row,
-      id: row.id || String(index + 1),
+      id: row.id || String(index + 1), // Use existing ID or generate one
     }));
-    rowSelection.value = {};
   },
-  { immediate: true }
+  { immediate: true } // Run immediately on component mount
 );
 
 const columns = computed<ColumnDef<CsvRow, any>[]>(() => {
   if (tableData.value.length === 0) return [];
 
-  const filteredKeys = Object.keys(tableData.value[0]).filter(key => key !== 'id' && props.visibleColumns.includes(key));
+  const firstRowKeys = Object.keys(tableData.value[0]).filter(key => key !== 'id'); // Exclude 'id' from display columns
 
-  const dynamicColumns = filteredKeys.map(key =>
+  const dynamicColumns = firstRowKeys.map(key =>
     columnHelper.accessor(key, {
       header: () => key.replace(/_/g, ' ').toUpperCase(),
-      cell: info => h('div', { class: 'text-left' }, info.getValue()),
-      enableHiding: false,
+      cell: info => h('div', { class: 'text-left' }, info.getValue()), // Default left alignment
+      enableHiding: true, // Ensure dynamic columns can be hidden
     })
   );
 
@@ -78,17 +83,16 @@ const columns = computed<ColumnDef<CsvRow, any>[]>(() => {
       header: ({ table }) =>
         h(Checkbox, {
           checked: table.getIsAllRowsSelected(),
-          'onUpdate:checked': table.getToggleAllRowsSelectedHandler(),
-          'aria-label': 'Select all',
+          'onUpdate:checked': value => table.toggleAllRowsSelected(!!value),
+          ariaLabel: 'Select all',
         }),
       cell: ({ row }) =>
         h(Checkbox, {
           checked: row.getIsSelected(),
-          'onUpdate:checked': row.getToggleSelectedHandler(),
-          'aria-label': 'Select row',
+          'onUpdate:checked': value => row.toggleSelected(!!value),
+          ariaLabel: 'Select row',
         }),
-      enableSorting: false,
-      enableHiding: false,
+      enableHiding: true, // Allow hiding this column
     }),
     ...dynamicColumns,
     columnHelper.display({
@@ -119,7 +123,7 @@ const columns = computed<ColumnDef<CsvRow, any>[]>(() => {
           ),
         ]);
       },
-      enableHiding: false,
+      enableHiding: false, // Actions column should generally not be hidden
     }),
   ];
 });
@@ -132,22 +136,14 @@ const table = useVueTable({
     return columns.value;
   },
   getCoreRowModel: getCoreRowModel(),
-  getFilteredRowModel: getFilteredRowModel(),
-  onRowSelectionChange: updaterOrValue => {
-    rowSelection.value =
-      typeof updaterOrValue === 'function'
-        ? updaterOrValue(rowSelection.value)
-        : updaterOrValue;
-  },
   state: {
-    get rowSelection() {
-      return rowSelection.value;
-    },
+    columnVisibility, // Pass the reactive ref for column visibility
   },
-});
-
-const selectedRowCount = computed(() => {
-  return Object.keys(rowSelection.value).filter(key => rowSelection.value[key]).length;
+  onColumnVisibilityChange: updater => {
+    // Update the reactive ref when the table's internal state changes
+    columnVisibility.value =
+      typeof updater === 'function' ? updater(columnVisibility.value) : updater;
+  },
 });
 
 const handleAddRow = () => {
@@ -165,18 +161,6 @@ const handleEdit = (row: CsvRow) => {
 const handleDelete = (id: string) => {
   tableData.value = tableData.value.filter(row => row.id !== id);
   showSuccessToast('Row deleted successfully!');
-  rowSelection.value = {};
-};
-
-const handleDeleteSelected = () => {
-  const selectedIds = Object.keys(rowSelection.value).filter(key => rowSelection.value[key]);
-  if (selectedIds.length === 0) {
-    showInfoToast('No rows selected for deletion.');
-    return;
-  }
-  tableData.value = tableData.value.filter(row => !selectedIds.includes(row.id));
-  showSuccessToast(`${selectedIds.length} row(s) deleted successfully!`);
-  rowSelection.value = {};
 };
 
 const handleSaveRow = (newRowData: Record<string, string>) => {
@@ -200,8 +184,7 @@ const handleExportCsv = () => {
     showInfoToast('No data to export.');
     return;
   }
-  const dataToExport = tableData.value.map(({ id, ...rest }) => rest);
-  const csv = Papa.unparse(dataToExport);
+  const csv = Papa.unparse(tableData.value);
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
@@ -218,26 +201,32 @@ const handleExportCsv = () => {
     <div class="flex justify-between mb-4">
       <Button @click="handleAddRow">Add New Row</Button>
       <div class="flex space-x-2">
-        <!-- Bulk Actions Dropdown -->
-        <DropdownMenu v-if="selectedRowCount >= 2">
+        <DropdownMenu>
           <DropdownMenuTrigger as-child>
-            <Button variant="outline">
-              Bulk Actions ({{ selectedRowCount }})
-              <ChevronDown class="ml-2 h-4 w-4" />
+            <Button variant="outline" class="ml-auto">
+              <Settings2 class="w-4 h-4 mr-2" />
+              View Columns
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem @click="handleDeleteSelected" class="text-destructive focus:text-destructive">
-              <Trash2 class="mr-2 h-4 w-4" /> Delete Selected
-            </DropdownMenuItem>
+          <DropdownMenuContent align="end" class="z-50">
+            <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuCheckboxItem
+              v-for="column in table.getAllColumns().filter(column => column.getCanHide())"
+              :key="column.id"
+              :checked="column.getIsVisible()"
+              @update:checked="(value) => column.toggleVisibility(!!value)"
+              class="capitalize"
+            >
+              {{ column.id.replace(/_/g, ' ') }}
+            </DropdownMenuCheckboxItem>
           </DropdownMenuContent>
         </DropdownMenu>
-
         <Button variant="outline" @click="handleExportCsv">Export CSV</Button>
       </div>
     </div>
 
-    <div class="rounded-md border overflow-auto">
+    <div class="rounded-md border">
       <Table>
         <TableHeader>
           <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
