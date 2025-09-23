@@ -15,10 +15,13 @@ import {
   TabsTrigger,
 } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input'; // Added Input for direct quantity editing
+import { Checkbox } from '@/components/ui/checkbox'; // Added Checkbox for cart items
 import CsvTable from '@/components/CsvTable.vue';
+import DecimalQuantityDialog from './DecimalQuantityDialog.vue'; // Import the new dialog
 import { showSuccessToast, showInfoToast } from '@/lib/toast';
 import type { CsvRow, CartItem } from '@/types';
-import { Trash2 } from 'lucide-vue-next';
+import { Trash2, Calculator } from 'lucide-vue-next'; // Added Calculator icon
 
 interface Props {
   open: boolean;
@@ -37,13 +40,16 @@ const currentOrderItems = ref<CsvRow[]>([]);
 const cartItems = ref<CartItem[]>([]);
 const activeTab = ref('select-items');
 
+// State for DecimalQuantityDialog
+const isDecimalQuantityDialogOpen = ref(false);
+const itemToEditQuantity = ref<CartItem | null>(null);
+
 watch(
   () => props.initialOrderData,
   (newVal) => {
-    // Ensure we're working with a fresh copy for the order session
     currentOrderItems.value = JSON.parse(JSON.stringify(newVal));
-    cartItems.value = []; // Reset cart when new order session starts
-    activeTab.value = 'select-items'; // Go back to select items tab
+    cartItems.value = [];
+    activeTab.value = 'select-items';
   },
   { immediate: true }
 );
@@ -55,14 +61,14 @@ const handleItemAddedToCart = (item: CsvRow) => {
   } else {
     cartItems.value.push({ ...item, quantity: 1 });
   }
-  showSuccessToast(`${item.name || item.id} added to cart!`);
+  showSuccessToast(`${item.name || item.id || item.id} added to cart!`);
 };
 
 const handleItemRemovedFromCart = (item: CsvRow) => {
   const index = cartItems.value.findIndex(cartItem => cartItem.id === item.id);
   if (index !== -1) {
     cartItems.value.splice(index, 1);
-    showInfoToast(`${item.name || item.id} removed from cart.`);
+    showInfoToast(`${item.name || item.id || item.id} removed from cart.`);
   }
 };
 
@@ -73,6 +79,7 @@ const updateCartItemQuantity = (id: string, newQuantity: number) => {
       handleRemoveCartItem(id);
     } else {
       item.quantity = newQuantity;
+      showInfoToast(`Quantity for ${item.name || item.id || item.id} updated.`);
     }
   }
 };
@@ -82,23 +89,34 @@ const handleRemoveCartItem = (id: string) => {
   showInfoToast('Item removed from cart.');
 };
 
-const totalCartValue = computed(() => {
-  return cartItems.value.reduce((sum, item) => {
-    const price = parseFloat(item.price as string); // Assuming price is a string in CsvRow
-    return sum + (isNaN(price) ? 0 : price * item.quantity);
-  }, 0).toFixed(2);
-});
+const openDecimalQuantityDialog = (item: CartItem) => {
+  itemToEditQuantity.value = item;
+  isDecimalQuantityDialogOpen.value = true;
+};
+
+const handleDecimalQuantityConfirm = (quantity: number) => {
+  if (itemToEditQuantity.value) {
+    updateCartItemQuantity(itemToEditQuantity.value.id, quantity);
+  }
+  itemToEditQuantity.value = null;
+  isDecimalQuantityDialogOpen.value = false;
+};
+
+const handleConfirmItemQuantity = (item: CartItem) => {
+  // This button now simply confirms the current quantity in the input field
+  // No additional action needed here as quantity is already reactive via v-model
+  showSuccessToast(`Quantity for ${item.name || item.id || item.id} confirmed.`);
+};
 
 const handlePlaceOrder = () => {
   if (cartItems.value.length === 0) {
     showInfoToast('Your cart is empty. Please add items before placing an order.');
     return;
   }
-  // In a real application, you would send `cartItems.value` to a backend here.
   console.log('Order Placed:', cartItems.value);
   showSuccessToast('Order placed successfully!');
   emit('order-placed', cartItems.value);
-  localOpen.value = false; // Close the sheet after placing order
+  localOpen.value = false;
 };
 </script>
 
@@ -140,9 +158,9 @@ const handlePlaceOrder = () => {
                 :key="item.id"
                 class="flex items-center justify-between p-3 border rounded-md bg-card"
               >
-                <div class="flex-1">
-                  <p class="font-medium">{{ item.name || item.id }}</p>
-                  <p class="text-sm text-muted-foreground">Price: ${{ parseFloat(item.price as string).toFixed(2) }}</p>
+                <div class="flex items-center space-x-3 flex-1">
+                  <Checkbox :checked="true" disabled />
+                  <span class="font-medium">{{ item.name || item.id }}</span>
                 </div>
                 <div class="flex items-center space-x-2">
                   <Button
@@ -157,8 +175,9 @@ const handlePlaceOrder = () => {
                     type="number"
                     v-model.number="item.quantity"
                     @change="updateCartItemQuantity(item.id, item.quantity)"
-                    min="1"
-                    class="w-16 text-center"
+                    min="0"
+                    step="0.01"
+                    class="w-20 text-center"
                   />
                   <Button
                     variant="outline"
@@ -167,6 +186,22 @@ const handlePlaceOrder = () => {
                     @click="updateCartItemQuantity(item.id, item.quantity + 1)"
                   >
                     +
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    class="h-8 w-8"
+                    @click="openDecimalQuantityDialog(item)"
+                  >
+                    <Calculator class="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    class="h-8"
+                    @click="handleConfirmItemQuantity(item)"
+                  >
+                    Confirm
                   </Button>
                   <Button
                     variant="destructive"
@@ -179,10 +214,6 @@ const handlePlaceOrder = () => {
                 </div>
               </div>
             </div>
-            <div class="mt-6 p-4 border-t flex justify-between items-center font-bold text-lg">
-              <span>Total:</span>
-              <span>${{ totalCartValue }}</span>
-            </div>
           </div>
         </TabsContent>
         <TabsContent value="order" class="flex-1 flex flex-col items-center justify-center mt-4">
@@ -193,10 +224,9 @@ const handlePlaceOrder = () => {
             <p class="text-lg">Review your order:</p>
             <ul class="list-disc list-inside text-left mx-auto max-w-xs">
               <li v-for="item in cartItems" :key="item.id">
-                {{ item.name || item.id }} (x{{ item.quantity }}) - ${{ (parseFloat(item.price as string) * item.quantity).toFixed(2) }}
+                {{ item.name || item.id }} (x{{ item.quantity }})
               </li>
             </ul>
-            <p class="text-xl font-bold mt-4">Total: ${{ totalCartValue }}</p>
             <Button @click="handlePlaceOrder" class="mt-6">Place Order</Button>
           </div>
         </TabsContent>
@@ -207,4 +237,11 @@ const handlePlaceOrder = () => {
       </SheetFooter>
     </SheetContent>
   </Sheet>
+
+  <DecimalQuantityDialog
+    v-model:open="isDecimalQuantityDialogOpen"
+    :initial-quantity="itemToEditQuantity?.quantity || 0"
+    :item-name="itemToEditQuantity?.name || itemToEditQuantity?.id || 'Item'"
+    @confirm="handleDecimalQuantityConfirm"
+  />
 </template>
