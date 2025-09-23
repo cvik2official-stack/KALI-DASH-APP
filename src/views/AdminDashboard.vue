@@ -19,10 +19,12 @@ import {
   MenubarContent,
   MenubarItem,
   MenubarSeparator,
-} from '@/components/ui/menubar'; // Import Menubar components
+} from '@/components/ui/menubar';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ColumnSettings from '@/components/ColumnSettings.vue';
+import FileUploadTab from '@/components/FileUploadTab.vue'; // Import new component
+import PasteDataTab from '@/components/PasteDataTab.vue'; // Import new component
 
 interface CsvRow {
   [key: string]: string;
@@ -31,11 +33,11 @@ interface CsvRow {
 const csvData = ref<CsvRow[]>([]);
 const isLoading = ref(true);
 const error = ref<string | null>(null);
-const isMenuOpen = ref(false); // State to control the sheet menu
+const isMenuOpen = ref(false);
 
 // State for column visibility
 const columnVisibility = ref<Record<string, boolean>>({});
-const availableColumns = ref<string[]>([]); // To store all possible columns from CSV
+const availableColumns = ref<string[]>([]);
 
 onMounted(async () => {
   showInfoToast('Loading CSV data...');
@@ -45,7 +47,6 @@ onMounted(async () => {
     if (data.length > 0) {
       const initialColumns = Object.keys(data[0]).filter(key => key !== 'id');
       availableColumns.value = initialColumns;
-      // Initialize all columns as visible by default
       columnVisibility.value = initialColumns.reduce((acc, col) => ({ ...acc, [col]: true }), {});
     }
     showSuccessToast('CSV data loaded successfully!');
@@ -57,12 +58,10 @@ onMounted(async () => {
   }
 });
 
-// Function to update column visibility from ColumnSettings component
 const updateColumnVisibility = (newVisibility: Record<string, boolean>) => {
   columnVisibility.value = newVisibility;
 };
 
-// Computed property to pass to CsvTable, filtering out 'id' and only including visible columns
 const visibleColumns = computed(() => {
   return availableColumns.value.filter(col => columnVisibility.value[col]);
 });
@@ -70,7 +69,6 @@ const visibleColumns = computed(() => {
 
 <template>
   <div class="flex flex-col min-h-full">
-    <!-- Header with Sheet Trigger and Menubar -->
     <header class="w-full flex items-center p-4 border-b">
       <Sheet v-model:open="isMenuOpen">
         <SheetTrigger as-child>
@@ -116,14 +114,13 @@ const visibleColumns = computed(() => {
       </Menubar>
     </header>
 
-    <!-- Main Content Area -->
     <main class="flex-1 flex flex-col p-4">
-      <!-- Removed the large "Admin Dashboard" text and descriptive paragraph -->
-
       <Tabs default-value="dataTable" class="flex-1 flex flex-col">
-        <TabsList class="grid w-full grid-cols-2">
+        <TabsList class="grid w-full grid-cols-4"> <!-- Adjusted grid-cols to accommodate new tabs -->
           <TabsTrigger value="dataTable">Data Table</TabsTrigger>
           <TabsTrigger value="columnSettings">Column Settings</TabsTrigger>
+          <TabsTrigger value="fileUpload">File Upload</TabsTrigger> <!-- New Tab Trigger -->
+          <TabsTrigger value="pasteData">Paste Data</TabsTrigger>   <!-- New Tab Trigger -->
         </TabsList>
         <TabsContent value="dataTable" class="flex-1 flex flex-col mt-4">
           <div v-if="isLoading" class="text-xl text-gray-600 dark:text-gray-300 text-center">Loading data...</div>
@@ -139,6 +136,12 @@ const visibleColumns = computed(() => {
             :initial-visibility="columnVisibility"
             @update:visibility="updateColumnVisibility"
           />
+        </TabsContent>
+        <TabsContent value="fileUpload" class="flex-1 flex flex-col mt-4"> <!-- New Tab Content -->
+          <FileUploadTab />
+        </TabsContent>
+        <TabsContent value="pasteData" class="flex-1 flex flex-col mt-4">   <!-- New Tab Content -->
+          <PasteDataTab />
         </TabsContent>
       </Tabs>
 
