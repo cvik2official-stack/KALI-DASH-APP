@@ -15,11 +15,13 @@ import {
   TabsTrigger,
 } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input'; // Added Input for direct quantity editing
+import { Checkbox } from '@/components/ui/checkbox'; // Added Checkbox for cart items
 import CsvTable from '@/components/CsvTable.vue';
-import CartItemsTable from './CartItemsTable.vue'; // Import the new CartItemsTable
-import DecimalQuantityDialog from './DecimalQuantityDialog.vue';
+import DecimalQuantityDialog from './DecimalQuantityDialog.vue'; // Import the new dialog
 import { showSuccessToast, showInfoToast } from '@/lib/toast';
 import type { CsvRow, CartItem } from '@/types';
+import { Trash2, Calculator } from 'lucide-vue-next'; // Added Calculator icon
 
 interface Props {
   open: boolean;
@@ -100,6 +102,12 @@ const handleDecimalQuantityConfirm = (quantity: number) => {
   isDecimalQuantityDialogOpen.value = false;
 };
 
+const handleConfirmItemQuantity = (item: CartItem) => {
+  // This button now simply confirms the current quantity in the input field
+  // No additional action needed here as quantity is already reactive via v-model
+  showSuccessToast(`Quantity for ${item.name || item.id || item.id} confirmed.`);
+};
+
 const handlePlaceOrder = () => {
   if (cartItems.value.length === 0) {
     showInfoToast('Your cart is empty. Please add items before placing an order.');
@@ -144,12 +152,68 @@ const handlePlaceOrder = () => {
             Your cart is empty. Add items from the "Select Items" tab.
           </div>
           <div v-else>
-            <CartItemsTable
-              :cart-items="cartItems"
-              @item-removed-from-cart="handleRemoveCartItem"
-              @update-cart-item-quantity="updateCartItemQuantity"
-              @open-decimal-quantity-dialog="openDecimalQuantityDialog"
-            />
+            <div class="space-y-4">
+              <div
+                v-for="item in cartItems"
+                :key="item.id"
+                class="flex items-center justify-between p-3 border rounded-md bg-card"
+              >
+                <div class="flex items-center space-x-3 flex-1">
+                  <Checkbox :checked="true" disabled />
+                  <span class="font-medium">{{ item.name || item.id }}</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    class="h-8 w-8"
+                    @click="updateCartItemQuantity(item.id, item.quantity - 1)"
+                  >
+                    -
+                  </Button>
+                  <Input
+                    type="number"
+                    v-model.number="item.quantity"
+                    @change="updateCartItemQuantity(item.id, item.quantity)"
+                    min="0"
+                    step="0.01"
+                    class="w-20 text-center"
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    class="h-8 w-8"
+                    @click="updateCartItemQuantity(item.id, item.quantity + 1)"
+                  >
+                    +
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    class="h-8 w-8"
+                    @click="openDecimalQuantityDialog(item)"
+                  >
+                    <Calculator class="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    class="h-8"
+                    @click="handleConfirmItemQuantity(item)"
+                  >
+                    Confirm
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    class="h-8 w-8"
+                    @click="handleRemoveCartItem(item.id)"
+                  >
+                    <Trash2 class="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
           </div>
         </TabsContent>
         <TabsContent value="order" class="flex-1 flex flex-col items-center justify-center mt-4 overflow-y-auto">
