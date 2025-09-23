@@ -16,7 +16,6 @@ import {
 } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import CsvTable from '@/components/CsvTable.vue';
-import CartItemsTable from './CartItemsTable.vue'; // Import the new CartItemsTable
 import DecimalQuantityDialog from './DecimalQuantityDialog.vue';
 import { showSuccessToast, showInfoToast } from '@/lib/toast';
 import type { CsvRow, CartItem } from '@/types';
@@ -62,11 +61,12 @@ const handleItemAddedToCart = (item: CsvRow) => {
   showSuccessToast(`${item.name || item.id || item.id} added to cart!`);
 };
 
-const handleItemRemovedFromCart = (item: CsvRow) => {
-  const index = cartItems.value.findIndex(cartItem => cartItem.id === item.id);
+const handleItemRemovedFromCart = (id: string) => {
+  const index = cartItems.value.findIndex(cartItem => cartItem.id === id);
   if (index !== -1) {
+    const removedItem = cartItems.value[index];
     cartItems.value.splice(index, 1);
-    showInfoToast(`${item.name || item.id || item.id} removed from cart.`);
+    showInfoToast(`${removedItem.name || removedItem.id} removed from cart.`);
   }
 };
 
@@ -77,14 +77,9 @@ const updateCartItemQuantity = (id: string, newQuantity: number) => {
       handleRemoveCartItem(id);
     } else {
       item.quantity = newQuantity;
-      showInfoToast(`Quantity for ${item.name || item.id || item.id} updated.`);
+      showInfoToast(`Quantity for ${item.name || item.id} updated.`);
     }
   }
-};
-
-const handleRemoveCartItem = (id: string) => {
-  cartItems.value = cartItems.value.filter(item => item.id !== id);
-  showInfoToast('Item removed from cart.');
 };
 
 const openDecimalQuantityDialog = (item: CartItem) => {
@@ -132,7 +127,7 @@ const handlePlaceOrder = () => {
           <div>
             <CsvTable
               :initial-data="currentOrderItems"
-              :is-order-mode="true"
+              view-mode="select-items"
               :cart-items="cartItems"
               @item-added-to-cart="handleItemAddedToCart"
               @item-removed-from-cart="handleItemRemovedFromCart"
@@ -144,7 +139,9 @@ const handlePlaceOrder = () => {
             Your cart is empty. Add items from the "Select Items" tab.
           </div>
           <div v-else>
-            <CartItemsTable
+            <CsvTable
+              :initial-data="currentOrderItems"
+              view-mode="cart"
               :cart-items="cartItems"
               @item-removed-from-cart="handleRemoveCartItem"
               @update-cart-item-quantity="updateCartItemQuantity"

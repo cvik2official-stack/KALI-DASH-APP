@@ -6,7 +6,6 @@ import {
   useVueTable,
   createColumnHelper,
   type ColumnDef,
-  type AccessorColumnDef,
 } from '@tanstack/vue-table';
 import {
   Table,
@@ -17,7 +16,9 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Trash2, Pencil } from 'lucide-vue-next';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Trash2, Pencil, Calculator } from 'lucide-vue-next';
 import AddEditCsvRowDialog from './AddEditCsvRowDialog.vue';
 import { showSuccessToast, showErrorToast, showInfoToast } from '@/lib/toast';
 import Papa from 'papaparse';
@@ -25,15 +26,21 @@ import type { CsvRow, CartItem } from '@/types';
 
 const props = defineProps<{
   initialData: CsvRow[];
-  isOrderMode: boolean;
-  cartItems: CartItem[];
+  viewMode: 'default' | 'select-items' | 'cart'; // New prop for different views
+  cartItems: CartItem[]; // Required for 'select-items' and 'cart' modes
 }>();
 
-const emit = defineEmits(['item-added-to-cart', 'item-removed-from-cart']);
+const emit = defineEmits([
+  'item-added-to-cart',
+  'item-removed-from-cart',
+  'update-cart-item-quantity',
+  'open-decimal-quantity-dialog',
+  'save',
+]);
 
 const columnHelper = createColumnHelper<CsvRow>();
 
-const tableData = ref<CsvRow[]>([]);
+const internalTableData = ref<CsvRow[]>([]);
 const isAddEditDialogOpen = ref(false);
 const addEditDialogMode = ref<'add' | 'edit'>('add');
 const currentEditRow = ref<CsvRow | undefined>(undefined);
@@ -45,7 +52,7 @@ const columnVisibility = ref<Record<string, boolean>>({
 watch(
   () => props.initialData,
   (newVal) => {
-    tableData.value = newVal.map((row, index) => ({
+    internalTableData.value = newVal.map((row, index) => ({
       ...row,
       id: row.id || String(index + 1),
     }));
@@ -53,38 +60,54 @@ watch(
   { immediate: true }
 );
 
+// Filtered data for 'cart' view mode
+const filteredCartData = computed(() => {
+  if (props.viewMode === 'cart') {
+    const cartItemIds = new Set(props.cartItems.map(item => item.id));
+    return internalTableData.value.filter(row => cartItemIds.has(row.id));
+  }
+  return internalTableData.value;
+});
+
 const columns = computed<ColumnDef<CsvRow, any>[]>(() => {
-  if (tableData.value.length === 0) return [];
+  if (internalTableData.value.length === 0 && props.viewMode !== 'cart') return [];
+  if (props.viewMode === 'cart' && filteredCartData.value.length === 0) return [];
 
-  const firstRowKeys = Object.keys(tableData.value[0]).filter(key => key !== 'id');
+  const dataToUseForColumns = props.viewMode === 'cart' ? filteredCartData.value : internalTableData.value;
+  if (dataToUseForColumns.length === 0) return []; // Handle case where filtered data is empty
 
-  const dynamicColumns = firstRowKeys.map(key =>
-    columnHelper.accessor(key, {
-      header: () => key.replace(/_/g, ' ').toUpperCase(),
-      cell: info => h('div', { class: 'text-left' }, info.getValue()),
-      enableHiding: true,
+  const firstRowKeys = Object.keys(dataToUseForColumns[0]).filter(key => key !== 'id');
+
+  const dynamicColumns = firstRowKeys
+    .filter(key => {
+      // Hide 'default_supplier' in 'select-items' and 'cart' modes
+      if (key === 'default_supplier' && (props.viewMode === 'select-items' || props.viewMode === 'cart')) {
+        return false;
+      }
+      return true;
     })
-  );
+    .map(key =>
+      columnHelper.accessor(key, {
+        header: () => key.replace(/_/g, ' ').toUpperCase(),
+        cell: info => h('div', { class: 'text-left' }, info.getValue()),
+        enableHiding: true,
+      })
+    );
 
-  if (props.isOrderMode) {
-    const filteredColumns = dynamicColumns.filter(col => {
-      // Correctly filter out the 'default_supplier' column
-      return !('accessorKey' in col && col.accessorKey === 'default_supplier');
-    });
+  const generatedColumns: ColumnDef<CsvRow, any>[] = [];
 
-    return [
+  if (props.viewMode === 'select-items') {
+    generatedColumns.push(
       columnHelper.display({
         id: 'select',
         header: () => h('div', { class: 'text-center' }, 'Select'),
         cell: ({ row }) => {
           const isSelected = props.cartItems.some(item => item.id === row.original.id);
-          return h('input', {
-            type: 'checkbox',
+          return h(Checkbox, {
             checked: isSelected,
             class: 'form-checkbox h-4 w-4 text-primary rounded',
-            onChange: (event: Event) => {
-              const target = event.target as HTMLInputElement;
-              if (target.checked) {
+            onUpdate: (checked: boolean) => {
+              if (checked) {
                 emit('item-added-to-cart', row.original);
               } else {
                 emit('item-removed-from-cart', row.original);
@@ -93,49 +116,140 @@ const columns = computed<ColumnDef<CsvRow, any>[]>(() => {
           });
         },
         enableHiding: false,
-      }),
-      ...filteredColumns,
-    ];
+      })
+    );
+  } else if (props.viewMode === 'cart') {
+    generatedColumns.push(
+      columnHelper.display({
+        id: 'select',
+        header: () => h('div', { class: 'text-center' }, 'Selected'),
+        cell: ({ row }) => {
+          return h(Checkbox, {
+            checked: true, // Always ticked in cart view
+            class: 'form-checkbox h-4 w-4 text-primary rounded',
+            onUpdate: (checked: boolean) => {
+              if (!checked) {
+                emit('item-removed-from-cart', row.original.id);
+              }
+            },
+          });
+        },
+        enableHiding: false,
+      })
+    );
   }
 
-  return [
-    ...dynamicColumns,
-    columnHelper.display({
-      id: 'actions',
-      header: () => 'Actions',
-      cell: ({ row }) => {
-        const originalRow = row.original;
-        return h('div', { class: 'flex space-x-2' }, [
-          h(
-            Button,
-            {
-              variant: 'outline',
-              size: 'icon',
-              class: 'h-8 w-8 p-0',
-              onClick: () => handleEdit(originalRow),
-            },
-            () => h(Pencil, { class: 'h-4 w-4' })
-          ),
-          h(
-            Button,
-            {
-              variant: 'destructive',
-              size: 'icon',
-              class: 'h-8 w-8 p-0',
-              onClick: () => handleDelete(originalRow.id),
-            },
-            () => h(Trash2, { class: 'h-4 w-4' })
-          ),
-        ]);
-      },
-      enableHiding: false,
-    }),
-  ];
+  generatedColumns.push(...dynamicColumns);
+
+  if (props.viewMode === 'cart') {
+    generatedColumns.push(
+      columnHelper.display({
+        id: 'quantity-controls',
+        header: () => 'Quantity',
+        cell: ({ row }) => {
+          const item = props.cartItems.find(cartItem => cartItem.id === row.original.id);
+          const currentQuantity = item ? item.quantity : 0;
+
+          return h('div', { class: 'flex items-center space-x-2' }, [
+            h(
+              Button,
+              {
+                variant: 'outline',
+                size: 'icon',
+                class: 'h-8 w-8',
+                onClick: () => emit('update-cart-item-quantity', row.original.id, currentQuantity - 1),
+              },
+              () => '-'
+            ),
+            h(Input, {
+              type: 'number',
+              modelValue: currentQuantity,
+              'onUpdate:modelValue': (value: string | number) => {
+                const newQuantity = parseFloat(String(value));
+                if (!isNaN(newQuantity)) {
+                  emit('update-cart-item-quantity', row.original.id, newQuantity);
+                }
+              },
+              min: '0',
+              step: '0.01',
+              class: 'w-20 text-center',
+            }),
+            h(
+              Button,
+              {
+                variant: 'outline',
+                size: 'icon',
+                class: 'h-8 w-8',
+                onClick: () => emit('update-cart-item-quantity', row.original.id, currentQuantity + 1),
+              },
+              () => '+'
+            ),
+            h(
+              Button,
+              {
+                variant: 'outline',
+                size: 'icon',
+                class: 'h-8 w-8',
+                onClick: () => emit('open-decimal-quantity-dialog', item),
+              },
+              () => h(Calculator, { class: 'h-4 w-4' })
+            ),
+            h(
+              Button,
+              {
+                variant: 'secondary',
+                size: 'sm',
+                class: 'h-8',
+                onClick: () => { /* No specific action needed here, quantity is reactive */ },
+              },
+              () => 'Confirm'
+            ),
+          ]);
+        },
+        enableHiding: false,
+      })
+    );
+  } else if (props.viewMode === 'default') {
+    generatedColumns.push(
+      columnHelper.display({
+        id: 'actions',
+        header: () => 'Actions',
+        cell: ({ row }) => {
+          const originalRow = row.original;
+          return h('div', { class: 'flex space-x-2' }, [
+            h(
+              Button,
+              {
+                variant: 'outline',
+                size: 'icon',
+                class: 'h-8 w-8 p-0',
+                onClick: () => handleEdit(originalRow),
+              },
+              () => h(Pencil, { class: 'h-4 w-4' })
+            ),
+            h(
+              Button,
+              {
+                variant: 'destructive',
+                size: 'icon',
+                class: 'h-8 w-8 p-0',
+                onClick: () => handleDelete(originalRow.id),
+              },
+              () => h(Trash2, { class: 'h-4 w-4' })
+            ),
+          ]);
+        },
+        enableHiding: false,
+      })
+    );
+  }
+
+  return generatedColumns;
 });
 
 const table = useVueTable({
   get data() {
-    return tableData.value;
+    return filteredCartData.value; // Use filtered data for the table
   },
   get columns() {
     return columns.value;
@@ -163,19 +277,19 @@ const handleEdit = (row: CsvRow) => {
 };
 
 const handleDelete = (id: string) => {
-  tableData.value = tableData.value.filter(row => row.id !== id);
+  internalTableData.value = internalTableData.value.filter(row => row.id !== id);
   showSuccessToast('Row deleted successfully!');
 };
 
 const handleSaveRow = (newRowData: Record<string, string>) => {
   if (addEditDialogMode.value === 'add') {
-    const newId = String(tableData.value.length > 0 ? Math.max(...tableData.value.map(r => Number(r.id))) + 1 : 1);
-    tableData.value.push({ ...newRowData, id: newId });
+    const newId = String(internalTableData.value.length > 0 ? Math.max(...internalTableData.value.map(r => Number(r.id))) + 1 : 1);
+    internalTableData.value.push({ ...newRowData, id: newId });
     showSuccessToast('Row added successfully!');
   } else if (addEditDialogMode.value === 'edit' && currentEditRow.value) {
-    const index = tableData.value.findIndex(row => row.id === currentEditRow.value?.id);
+    const index = internalTableData.value.findIndex(row => row.id === currentEditRow.value?.id);
     if (index !== -1) {
-      tableData.value[index] = { ...newRowData, id: currentEditRow.value.id };
+      internalTableData.value[index] = { ...newRowData, id: currentEditRow.value.id };
       showSuccessToast('Row updated successfully!');
     } else {
       showErrorToast('Failed to update row.');
@@ -184,11 +298,11 @@ const handleSaveRow = (newRowData: Record<string, string>) => {
 };
 
 const handleExportCsv = () => {
-  if (tableData.value.length === 0) {
+  if (internalTableData.value.length === 0) {
     showInfoToast('No data to export.');
     return;
   }
-  const csv = Papa.unparse(tableData.value);
+  const csv = Papa.unparse(internalTableData.value);
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
@@ -202,10 +316,10 @@ const handleExportCsv = () => {
 
 <template>
   <div class="w-full">
-    <div class="flex justify-between mb-4">
-      <Button v-if="!isOrderMode" @click="handleAddRow">Add New Row</Button>
+    <div class="flex justify-between mb-4" v-if="viewMode === 'default'">
+      <Button @click="handleAddRow">Add New Row</Button>
       <div class="flex space-x-2">
-        <Button v-if="!isOrderMode" variant="outline" @click="handleExportCsv">Export CSV</Button>
+        <Button variant="outline" @click="handleExportCsv">Export CSV</Button>
       </div>
     </div>
 
@@ -246,10 +360,11 @@ const handleExportCsv = () => {
     </div>
 
     <AddEditCsvRowDialog
+      v-if="viewMode === 'default'"
       v-model:open="isAddEditDialogOpen"
       :mode="addEditDialogMode"
       :initial-data="currentEditRow"
-      :columns="Object.keys(tableData[0] || {}).filter(key => key !== 'id')"
+      :columns="Object.keys(internalTableData[0] || {}).filter(key => key !== 'id')"
       @save="handleSaveRow"
     />
   </div>
