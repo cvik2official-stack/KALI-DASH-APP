@@ -51,10 +51,10 @@ onMounted(async () => {
           <MenuPanel />
         </SheetContent>
       </Sheet>
-      <h1 class="text-4xl font-bold flex-1 text-center">Admin Dashboard</h1> <!-- Centered title -->
+      <!-- Removed the h1 title -->
     </div>
     
-    <p class="text-lg mb-8 text-center">Manage your CSV data below.</p>
+    <!-- Removed the p subtitle -->
 
     <div v-if="isLoading" class="text-xl text-gray-600 dark:text-gray-300 text-center">Loading data...</div>
     <div v-else-if="error" class="text-xl text-red-600 dark:text-red-400 text-center">Error: {{ error }}</div>
@@ -62,8 +62,6 @@ onMounted(async () => {
       <CsvTable :initial-data="csvData" />
     </div>
     <div v-else class="text-xl text-gray-600 dark:text-gray-300 text-center">No CSV data available.</div>
-
-    <!-- Removed the RouterLink to home page -->
   </div>
 </template>
 
