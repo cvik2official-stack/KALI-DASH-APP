@@ -16,9 +16,20 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Trash2, Pencil } from 'lucide-vue-next';
+import { Trash2, Pencil, MoreHorizontal, Settings2 } from 'lucide-vue-next';
 import AddEditCsvRowDialog from './AddEditCsvRowDialog.vue';
 import { showSuccessToast, showErrorToast } from '@/lib/toast';
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Checkbox } from '@/components/ui/checkbox';
+import Papa from 'papaparse';
 
 interface CsvRow {
   [key: string]: string;
@@ -56,29 +67,53 @@ const columns = computed<ColumnDef<CsvRow, any>[]>(() => {
   const dynamicColumns = firstRowKeys.map(key =>
     columnHelper.accessor(key, {
       header: () => key.replace(/_/g, ' ').toUpperCase(),
-      cell: info => info.getValue(),
+      cell: info => h('div', { class: 'text-left' }, info.getValue()), // Default left alignment
     })
   );
 
   return [
+    columnHelper.display({
+      id: 'select',
+      header: ({ table }) =>
+        h(Checkbox, {
+          checked: table.getIsAllRowsSelected(),
+          'onUpdate:checked': value => table.toggleAllRowsSelected(!!value),
+          ariaLabel: 'Select all',
+        }),
+      cell: ({ row }) =>
+        h(Checkbox, {
+          checked: row.getIsSelected(),
+          'onUpdate:checked': value => row.toggleSelected(!!value),
+          ariaLabel: 'Select row',
+        }),
+      enableHiding: true, // Allow hiding this column
+    }),
     ...dynamicColumns,
     columnHelper.display({
       id: 'actions',
       header: () => 'Actions',
       cell: ({ row }) => {
         const originalRow = row.original;
-        return h('div', { class: 'flex space-x-2' }, [
-          h(Button, {
-            variant: 'outline',
-            size: 'sm',
-            onClick: () => handleEdit(originalRow),
-          }, () => h(Pencil, { class: 'h-4 w-4' })),
-          h(Button, {
-            variant: 'destructive',
-            size: 'sm',
-            onClick: () => handleDelete(originalRow.id),
-          }, () => h(Trash2, { class: 'h-4 w-4' })),
-        ]);
+        return h(
+          DropdownMenu,
+          {},
+          {
+            trigger: () =>
+              h(
+                Button,
+                {
+                  variant: 'ghost',
+                  class: 'h-8 w-8 p-0',
+                },
+                () => h(MoreHorizontal, { class: 'h-4 w-4' })
+              ),
+            content: () => [
+              h(DropdownMenuLabel, {}, () => 'Actions'),
+              h(DropdownMenuItem, { onClick: () => handleEdit(originalRow) }, () => 'Edit'),
+              h(DropdownMenuItem, { onClick: () => handleDelete(originalRow.id) }, () => 'Delete'),
+            ],
+          }
+        );
       },
     }),
   ];
@@ -88,10 +123,15 @@ const table = useVueTable({
   get data() {
     return tableData.value;
   },
-  get columns() { // Ensure columns are reactively provided as a getter
+  get columns() {
     return columns.value;
   },
   getCoreRowModel: getCoreRowModel(),
+  initialState: {
+    columnVisibility: {
+      select: false, // Hide checkbox column by default
+    },
+  },
 });
 
 const handleAddRow = () => {
@@ -126,12 +166,52 @@ const handleSaveRow = (newRowData: Record<string, string>) => {
     }
   }
 };
+
+const handleExportCsv = () => {
+  if (tableData.value.length === 0) {
+    showInfoToast('No data to export.');
+    return;
+  }
+  const csv = Papa.unparse(tableData.value);
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.setAttribute('download', 'exported_data.csv');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  showSuccessToast('Data exported successfully!');
+};
 </script>
 
 <template>
   <div class="w-full">
-    <div class="flex justify-end mb-4">
+    <div class="flex justify-between mb-4">
       <Button @click="handleAddRow">Add New Row</Button>
+      <div class="flex space-x-2">
+        <DropdownMenu>
+          <DropdownMenuTrigger as-child>
+            <Button variant="outline" class="ml-auto">
+              <Settings2 class="w-4 h-4 mr-2" />
+              View Columns
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuCheckboxItem
+              v-for="column in table.getAllColumns().filter(column => column.getCanHide())"
+              :key="column.id"
+              :checked="column.getIsVisible()"
+              @update:checked="(value) => column.toggleVisibility(!!value)"
+              class="capitalize"
+            >
+              {{ column.id.replace(/_/g, ' ') }}
+            </DropdownMenuCheckboxItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <Button variant="outline" @click="handleExportCsv">Export CSV</Button>
+      </div>
     </div>
 
     <div class="rounded-md border">
