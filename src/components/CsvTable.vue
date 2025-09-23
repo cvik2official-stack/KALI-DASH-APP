@@ -68,7 +68,8 @@ const columns = computed<ColumnDef<CsvRow, any>[]>(() => {
 
   if (props.isOrderMode) {
     const filteredColumns = dynamicColumns.filter(col => {
-      return !('accessorKey' in col && col.accessorKey === 'supplier');
+      // Correctly filter out the 'default_supplier' column
+      return !('accessorKey' in col && col.accessorKey === 'default_supplier');
     });
 
     return [
