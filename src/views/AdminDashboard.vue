@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { RouterLink } from 'vue-router';
 import { Button } from '@/components/ui/button';
 import { loadCsvData } from '@/lib/csvUtils';
 import CsvTable from '@/components/CsvTable.vue';
@@ -43,7 +42,7 @@ onMounted(async () => {
     <div class="w-full flex items-center justify-between mb-6">
       <Sheet v-model:open="isMenuOpen">
         <SheetTrigger as-child>
-          <Button variant="outline" size="icon"> <!-- Removed md:hidden -->
+          <Button variant="outline" size="icon">
             <Menu class="h-4 w-4" />
             <span class="sr-only">Open menu</span>
           </Button>
@@ -64,9 +63,7 @@ onMounted(async () => {
     </div>
     <div v-else class="text-xl text-gray-600 dark:text-gray-300 text-center">No CSV data available.</div>
 
-    <RouterLink to="/" class="mt-8 mx-auto">
-      <Button variant="outline">Back to Home</Button>
-    </RouterLink>
+    <!-- Removed the RouterLink to home page -->
   </div>
 </template>
 
