@@ -61,14 +61,14 @@ const handleItemAddedToCart = (item: CsvRow) => {
   } else {
     cartItems.value.push({ ...item, quantity: 1 });
   }
-  showSuccessToast(`${item.name || item.id || item.id} added to cart!`);
+  showSuccessToast(`${item.NAME || item.id} added to cart!`);
 };
 
 const handleItemRemovedFromCart = (item: CsvRow) => {
   const index = cartItems.value.findIndex(cartItem => cartItem.id === item.id);
   if (index !== -1) {
     cartItems.value.splice(index, 1);
-    showInfoToast(`${item.name || item.id || item.id} removed from cart.`);
+    showInfoToast(`${item.NAME || item.id} removed from cart.`);
   }
 };
 
@@ -79,7 +79,7 @@ const updateCartItemQuantity = (id: string, newQuantity: number) => {
       handleRemoveCartItem(id);
     } else {
       item.quantity = newQuantity;
-      showInfoToast(`Quantity for ${item.name || item.id || item.id} updated.`);
+      showInfoToast(`Quantity for ${item.NAME || item.id} updated.`);
     }
   }
 };
@@ -105,7 +105,7 @@ const handleDecimalQuantityConfirm = (quantity: number) => {
 const handleConfirmItemQuantity = (item: CartItem) => {
   // This button now simply confirms the current quantity in the input field
   // No additional action needed here as quantity is already reactive via v-model
-  showSuccessToast(`Quantity for ${item.name || item.id || item.id} confirmed.`);
+  showSuccessToast(`Quantity for ${item.NAME || item.id} confirmed.`);
 };
 
 const handlePlaceOrder = () => {
@@ -160,7 +160,7 @@ const handlePlaceOrder = () => {
               >
                 <div class="flex items-center space-x-3 flex-1">
                   <Checkbox :checked="true" disabled />
-                  <span class="font-medium">{{ item.name || item.id }}</span>
+                  <span class="font-medium">{{ item.NAME || item.id }}</span>
                 </div>
                 <div class="flex items-center space-x-2">
                   <Button
@@ -224,7 +224,7 @@ const handlePlaceOrder = () => {
             <p class="text-lg">Review your order:</p>
             <ul class="list-disc list-inside text-left mx-auto max-w-xs">
               <li v-for="item in cartItems" :key="item.id">
-                {{ item.name || item.id }} (x{{ item.quantity }})
+                {{ item.NAME || item.id }} (x{{ item.quantity }})
               </li>
             </ul>
             <Button @click="handlePlaceOrder" class="mt-6">Place Order</Button>
@@ -241,7 +241,7 @@ const handlePlaceOrder = () => {
   <DecimalQuantityDialog
     v-model:open="isDecimalQuantityDialogOpen"
     :initial-quantity="itemToEditQuantity?.quantity || 0"
-    :item-name="itemToEditQuantity?.name || itemToEditQuantity?.id || 'Item'"
+    :item-name="itemToEditQuantity?.NAME || itemToEditQuantity?.id || 'Item'"
     @confirm="handleDecimalQuantityConfirm"
   />
 </template>
