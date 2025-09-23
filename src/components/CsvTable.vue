@@ -6,7 +6,7 @@ import {
   useVueTable,
   createColumnHelper,
   type ColumnDef,
-  type AccessorColumnDef, // Import AccessorColumnDef for type checking
+  type AccessorColumnDef,
 } from '@tanstack/vue-table';
 import {
   Table,
@@ -21,15 +21,15 @@ import { Trash2, Pencil } from 'lucide-vue-next';
 import AddEditCsvRowDialog from './AddEditCsvRowDialog.vue';
 import { showSuccessToast, showErrorToast, showInfoToast } from '@/lib/toast';
 import Papa from 'papaparse';
-import type { CsvRow, CartItem } from '@/types'; // Import CsvRow and CartItem
+import type { CsvRow, CartItem } from '@/types';
 
 const props = defineProps<{
   initialData: CsvRow[];
-  isOrderMode: boolean; // New prop for order mode
-  cartItems: CartItem[]; // New prop for cart items
+  isOrderMode: boolean;
+  cartItems: CartItem[];
 }>();
 
-const emit = defineEmits(['item-added-to-cart', 'item-removed-from-cart']); // Define emits
+const emit = defineEmits(['item-added-to-cart', 'item-removed-from-cart']);
 
 const columnHelper = createColumnHelper<CsvRow>();
 
@@ -38,42 +38,36 @@ const isAddEditDialogOpen = ref(false);
 const addEditDialogMode = ref<'add' | 'edit'>('add');
 const currentEditRow = ref<CsvRow | undefined>(undefined);
 
-// Reactive state for column visibility (still needed for internal table logic, but not exposed via button)
 const columnVisibility = ref<Record<string, boolean>>({
-  select: false, // Hide checkbox column by default
+  select: false,
 });
 
-// Watch for changes in initialData and update tableData reactively
 watch(
   () => props.initialData,
   (newVal) => {
     tableData.value = newVal.map((row, index) => ({
       ...row,
-      id: row.id || String(index + 1), // Use existing ID or generate one
+      id: row.id || String(index + 1),
     }));
   },
-  { immediate: true } // Run immediately on component mount
+  { immediate: true }
 );
 
 const columns = computed<ColumnDef<CsvRow, any>[]>(() => {
   if (tableData.value.length === 0) return [];
 
-  const firstRowKeys = Object.keys(tableData.value[0]).filter(key => key !== 'id'); // Exclude 'id' from display columns
+  const firstRowKeys = Object.keys(tableData.value[0]).filter(key => key !== 'id');
 
   const dynamicColumns = firstRowKeys.map(key =>
     columnHelper.accessor(key, {
       header: () => key.replace(/_/g, ' ').toUpperCase(),
-      cell: info => h('div', { class: 'text-left' }, info.getValue()), // Default left alignment
-      enableHiding: true, // Ensure dynamic columns can be hidden
+      cell: info => h('div', { class: 'text-left' }, info.getValue()),
+      enableHiding: true,
     })
   );
 
-  // If in order mode, filter out the 'supplier' column and add a checkbox
   if (props.isOrderMode) {
     const filteredColumns = dynamicColumns.filter(col => {
-      // Check if the column has an accessorKey and if it's 'supplier'
-      // 'col' is already a ColumnDef object here.
-      // We need to ensure it's an AccessorColumnDef to safely access accessorKey.
       return !('accessorKey' in col && col.accessorKey === 'supplier');
     });
 
@@ -103,7 +97,6 @@ const columns = computed<ColumnDef<CsvRow, any>[]>(() => {
     ];
   }
 
-  // Default columns for non-order mode
   return [
     ...dynamicColumns,
     columnHelper.display({
@@ -134,7 +127,7 @@ const columns = computed<ColumnDef<CsvRow, any>[]>(() => {
           ),
         ]);
       },
-      enableHiding: false, // Actions column should generally not be hidden
+      enableHiding: false,
     }),
   ];
 });
@@ -148,10 +141,9 @@ const table = useVueTable({
   },
   getCoreRowModel: getCoreRowModel(),
   state: {
-    columnVisibility, // Pass the reactive ref for column visibility
+    columnVisibility,
   },
   onColumnVisibilityChange: updater => {
-    // Update the reactive ref when the table's internal state changes
     columnVisibility.value =
       typeof updater === 'function' ? updater(columnVisibility.value) : updater;
   },
@@ -261,4 +253,4 @@ const handleExportCsv = () => {
     />
   </div>
 </template>
-</script>
+</template>
