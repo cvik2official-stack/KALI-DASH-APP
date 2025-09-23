@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue'; // Import watch
 import { Button } from '@/components/ui/button';
 import { loadCsvData } from '@/lib/csvUtils';
 import CsvTable from '@/components/CsvTable.vue';
@@ -35,6 +35,11 @@ onMounted(async () => {
   } finally {
     isLoading.value = false;
   }
+});
+
+// Watch for changes in isOrderMode for debugging
+watch(isOrderMode, (newVal) => {
+  console.log('Order Mode changed to:', newVal);
 });
 
 // Handlers for cart actions (will be passed to CsvTable)
@@ -76,6 +81,9 @@ const handleItemRemovedFromCart = (item: CsvRow) => {
       </div>
     </div>
     
+    <!-- Debugging text to show current order mode state -->
+    <p class="mb-4 text-sm text-muted-foreground">Order Mode is: {{ isOrderMode }}</p>
+
     <Tabs v-if="isOrderMode" default-value="select-items" class="flex-1 flex flex-col">
       <TabsList class="grid w-full grid-cols-3">
         <TabsTrigger value="select-items">
