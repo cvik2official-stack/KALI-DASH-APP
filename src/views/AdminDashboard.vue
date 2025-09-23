@@ -23,8 +23,9 @@ import {
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ColumnSettings from '@/components/ColumnSettings.vue';
-import FileUploadTab from '@/components/FileUploadTab.vue'; // Import new component
-import PasteDataTab from '@/components/PasteDataTab.vue'; // Import new component
+import FileUploadTab from '@/components/FileUploadTab.vue';
+import PasteDataTab from '@/components/PasteDataTab.vue';
+import FetchFromUrlTab from '@/components/FetchFromUrlTab.vue'; // Import new component
 
 interface CsvRow {
   [key: string]: string;
@@ -116,11 +117,12 @@ const visibleColumns = computed(() => {
 
     <main class="flex-1 flex flex-col p-4">
       <Tabs default-value="dataTable" class="flex-1 flex flex-col">
-        <TabsList class="grid w-full grid-cols-4"> <!-- Adjusted grid-cols to accommodate new tabs -->
+        <TabsList class="grid w-full grid-cols-5"> <!-- Adjusted grid-cols to accommodate new tab -->
           <TabsTrigger value="dataTable">Data Table</TabsTrigger>
           <TabsTrigger value="columnSettings">Column Settings</TabsTrigger>
-          <TabsTrigger value="fileUpload">File Upload</TabsTrigger> <!-- New Tab Trigger -->
-          <TabsTrigger value="pasteData">Paste Data</TabsTrigger>   <!-- New Tab Trigger -->
+          <TabsTrigger value="fileUpload">File Upload</TabsTrigger>
+          <TabsTrigger value="pasteData">Paste Data</TabsTrigger>
+          <TabsTrigger value="fetchFromUrl">Fetch from URL</TabsTrigger> <!-- New Tab Trigger -->
         </TabsList>
         <TabsContent value="dataTable" class="flex-1 flex flex-col mt-4">
           <div v-if="isLoading" class="text-xl text-gray-600 dark:text-gray-300 text-center">Loading data...</div>
@@ -137,11 +139,14 @@ const visibleColumns = computed(() => {
             @update:visibility="updateColumnVisibility"
           />
         </TabsContent>
-        <TabsContent value="fileUpload" class="flex-1 flex flex-col mt-4"> <!-- New Tab Content -->
+        <TabsContent value="fileUpload" class="flex-1 flex flex-col mt-4">
           <FileUploadTab />
         </TabsContent>
-        <TabsContent value="pasteData" class="flex-1 flex flex-col mt-4">   <!-- New Tab Content -->
+        <TabsContent value="pasteData" class="flex-1 flex flex-col mt-4">
           <PasteDataTab />
+        </TabsContent>
+        <TabsContent value="fetchFromUrl" class="flex-1 flex flex-col mt-4"> <!-- New Tab Content -->
+          <FetchFromUrlTab />
         </TabsContent>
       </Tabs>
 
