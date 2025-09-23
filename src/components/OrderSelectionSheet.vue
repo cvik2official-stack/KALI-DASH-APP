@@ -15,13 +15,13 @@ import {
   TabsTrigger,
 } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input'; // Added Input for direct quantity editing
-import { Checkbox } from '@/components/ui/checkbox'; // Added Checkbox for cart items
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import CsvTable from '@/components/CsvTable.vue';
-import DecimalQuantityDialog from './DecimalQuantityDialog.vue'; // Import the new dialog
+import DecimalQuantityDialog from './DecimalQuantityDialog.vue';
 import { showSuccessToast, showInfoToast } from '@/lib/toast';
 import type { CsvRow, CartItem } from '@/types';
-import { Trash2, Calculator } from 'lucide-vue-next'; // Added Calculator icon
+import { Trash2, Calculator } from 'lucide-vue-next';
 
 interface Props {
   open: boolean;
@@ -54,6 +54,11 @@ watch(
   { immediate: true }
 );
 
+// Helper function to get the display name for an item
+const getDisplayName = (item: CsvRow | CartItem) => {
+  return item.item_name || item.name || item.id;
+};
+
 const handleItemAddedToCart = (item: CsvRow) => {
   const existingItem = cartItems.value.find(cartItem => cartItem.id === item.id);
   if (existingItem) {
@@ -61,14 +66,14 @@ const handleItemAddedToCart = (item: CsvRow) => {
   } else {
     cartItems.value.push({ ...item, quantity: 1 });
   }
-  showSuccessToast(`${item.name || item.id || item.id} added to cart!`);
+  showSuccessToast(`${getDisplayName(item)} added to cart!`);
 };
 
 const handleItemRemovedFromCart = (item: CsvRow) => {
   const index = cartItems.value.findIndex(cartItem => cartItem.id === item.id);
   if (index !== -1) {
     cartItems.value.splice(index, 1);
-    showInfoToast(`${item.name || item.id || item.id} removed from cart.`);
+    showInfoToast(`${getDisplayName(item)} removed from cart.`);
   }
 };
 
@@ -79,7 +84,7 @@ const updateCartItemQuantity = (id: string, newQuantity: number) => {
       handleRemoveCartItem(id);
     } else {
       item.quantity = newQuantity;
-      showInfoToast(`Quantity for ${item.name || item.id || item.id} updated.`);
+      showInfoToast(`Quantity for ${getDisplayName(item)} updated.`);
     }
   }
 };
@@ -103,9 +108,7 @@ const handleDecimalQuantityConfirm = (quantity: number) => {
 };
 
 const handleConfirmItemQuantity = (item: CartItem) => {
-  // This button now simply confirms the current quantity in the input field
-  // No additional action needed here as quantity is already reactive via v-model
-  showSuccessToast(`Quantity for ${item.name || item.id || item.id} confirmed.`);
+  showSuccessToast(`Quantity for ${getDisplayName(item)} confirmed.`);
 };
 
 const handlePlaceOrder = () => {
@@ -160,7 +163,7 @@ const handlePlaceOrder = () => {
               >
                 <div class="flex items-center space-x-3 flex-1">
                   <Checkbox :checked="true" disabled />
-                  <span class="font-medium">{{ item.name || item.id }}</span>
+                  <span class="font-medium">{{ getDisplayName(item) }}</span>
                 </div>
                 <div class="flex items-center space-x-2">
                   <Button
@@ -224,7 +227,7 @@ const handlePlaceOrder = () => {
             <p class="text-lg">Review your order:</p>
             <ul class="list-disc list-inside text-left mx-auto max-w-xs">
               <li v-for="item in cartItems" :key="item.id">
-                {{ item.name || item.id }} (x{{ item.quantity }})
+                {{ getDisplayName(item) }} (x{{ item.quantity }})
               </li>
             </ul>
             <Button @click="handlePlaceOrder" class="mt-6">Place Order</Button>
@@ -241,7 +244,7 @@ const handlePlaceOrder = () => {
   <DecimalQuantityDialog
     v-model:open="isDecimalQuantityDialogOpen"
     :initial-quantity="itemToEditQuantity?.quantity || 0"
-    :item-name="itemToEditQuantity?.name || itemToEditQuantity?.id || 'Item'"
+    :item-name="itemToEditQuantity ? getDisplayName(itemToEditQuantity) : 'Item'"
     @confirm="handleDecimalQuantityConfirm"
   />
 </template>
