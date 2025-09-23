@@ -16,19 +16,9 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Trash2, Pencil, Settings2 } from 'lucide-vue-next'; // Removed MoreHorizontal
+import { Trash2, Pencil } from 'lucide-vue-next'; 
 import AddEditCsvRowDialog from './AddEditCsvRowDialog.vue';
 import { showSuccessToast, showErrorToast, showInfoToast } from '@/lib/toast';
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Checkbox } from '@/components/ui/checkbox';
 import Papa from 'papaparse';
 
 interface CsvRow {
@@ -47,7 +37,7 @@ const isAddEditDialogOpen = ref(false);
 const addEditDialogMode = ref<'add' | 'edit'>('add');
 const currentEditRow = ref<CsvRow | undefined>(undefined);
 
-// Reactive state for column visibility
+// Reactive state for column visibility (still needed for internal table logic, but not exposed via button)
 const columnVisibility = ref<Record<string, boolean>>({
   select: false, // Hide checkbox column by default
 });
@@ -78,22 +68,7 @@ const columns = computed<ColumnDef<CsvRow, any>[]>(() => {
   );
 
   return [
-    columnHelper.display({
-      id: 'select',
-      header: ({ table }) =>
-        h(Checkbox, {
-          checked: table.getIsAllRowsSelected(),
-          'onUpdate:checked': value => table.toggleAllRowsSelected(!!value),
-          ariaLabel: 'Select all',
-        }),
-      cell: ({ row }) =>
-        h(Checkbox, {
-          checked: row.getIsSelected(),
-          'onUpdate:checked': value => row.toggleSelected(!!value),
-          ariaLabel: 'Select row',
-        }),
-      enableHiding: true, // Allow hiding this column
-    }),
+    // Removed the 'select' column as it's not needed without the view columns button
     ...dynamicColumns,
     columnHelper.display({
       id: 'actions',
@@ -201,27 +176,7 @@ const handleExportCsv = () => {
     <div class="flex justify-between mb-4">
       <Button @click="handleAddRow">Add New Row</Button>
       <div class="flex space-x-2">
-        <DropdownMenu>
-          <DropdownMenuTrigger as-child>
-            <Button variant="outline" class="ml-auto">
-              <Settings2 class="w-4 h-4 mr-2" />
-              View Columns
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" class="z-50">
-            <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuCheckboxItem
-              v-for="column in table.getAllColumns().filter(column => column.getCanHide())"
-              :key="column.id"
-              :checked="column.getIsVisible()"
-              @update:checked="(value) => column.toggleVisibility(!!value)"
-              class="capitalize"
-            >
-              {{ column.id.replace(/_/g, ' ') }}
-            </DropdownMenuCheckboxItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <!-- Removed DropdownMenu for View Columns -->
         <Button variant="outline" @click="handleExportCsv">Export CSV</Button>
       </div>
     </div>
