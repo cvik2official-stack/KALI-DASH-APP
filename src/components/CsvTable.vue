@@ -78,6 +78,7 @@ const columns = computed<ColumnDef<CsvRow, any>[]>(() => {
           return h('input', {
             type: 'checkbox',
             checked: isSelected,
+            value: row.original.NAME, // Add value attribute to uniquely identify the checkbox
             class: 'form-checkbox h-4 w-4 text-primary rounded',
             onChange: (event: Event) => {
               const target = event.target as HTMLInputElement;
