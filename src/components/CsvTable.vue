@@ -6,6 +6,7 @@ import {
   useVueTable,
   createColumnHelper,
   type ColumnDef,
+  getFilteredRowModel, // Added for filtering if needed, good practice
 } from '@tanstack/vue-table';
 import {
   Table,
@@ -20,6 +21,7 @@ import { Trash2, Pencil } from 'lucide-vue-next';
 import AddEditCsvRowDialog from './AddEditCsvRowDialog.vue';
 import { showSuccessToast, showErrorToast, showInfoToast } from '@/lib/toast';
 import Papa from 'papaparse';
+import { Checkbox } from '@/components/ui/checkbox'; // Import Checkbox component
 
 interface CsvRow {
   [key: string]: string;
@@ -36,6 +38,7 @@ const tableData = ref<CsvRow[]>([]);
 const isAddEditDialogOpen = ref(false);
 const addEditDialogMode = ref<'add' | 'edit'>('add');
 const currentEditRow = ref<CsvRow | undefined>(undefined);
+const rowSelection = ref({}); // State for row selection
 
 // Watch for changes in initialData and update tableData reactively
 watch(
@@ -45,6 +48,7 @@ watch(
       ...row,
       id: row.id || String(index + 1), // Use existing ID or generate one
     }));
+    rowSelection.value = {}; // Reset selection when data changes
   },
   { immediate: true } // Run immediately on component mount
 );
@@ -57,12 +61,29 @@ const columns = computed<ColumnDef<CsvRow, any>[]>(() => {
   const dynamicColumns = firstRowKeys.map(key =>
     columnHelper.accessor(key, {
       header: () => key.replace(/_/g, ' ').toUpperCase(),
-      cell: info => h('div', { class: 'text-left' }, info.getValue()), // Default left alignment
-      enableHiding: false, // Hiding is no longer supported without the UI
+      cell: info => h('div', { class: 'text-left' }, info.getValue()),
+      enableHiding: false,
     })
   );
 
   return [
+    columnHelper.display({
+      id: 'select',
+      header: ({ table }) =>
+        h(Checkbox, {
+          checked: table.getIsAllRowsSelected(),
+          'onUpdate:checked': table.getToggleAllRowsSelectedHandler(),
+          'aria-label': 'Select all',
+        }),
+      cell: ({ row }) =>
+        h(Checkbox, {
+          checked: row.getIsSelected(),
+          'onUpdate:checked': row.getToggleSelectedHandler(),
+          'aria-label': 'Select row',
+        }),
+      enableSorting: false,
+      enableHiding: false,
+    }),
     ...dynamicColumns,
     columnHelper.display({
       id: 'actions',
@@ -92,7 +113,7 @@ const columns = computed<ColumnDef<CsvRow, any>[]>(() => {
           ),
         ]);
       },
-      enableHiding: false, // Actions column should generally not be hidden
+      enableHiding: false,
     }),
   ];
 });
@@ -105,6 +126,18 @@ const table = useVueTable({
     return columns.value;
   },
   getCoreRowModel: getCoreRowModel(),
+  getFilteredRowModel: getFilteredRowModel(), // Added for filtering
+  onRowSelectionChange: updaterOrValue => {
+    rowSelection.value =
+      typeof updaterOrValue === 'function'
+        ? updaterOrValue(rowSelection.value)
+        : updaterOrValue;
+  },
+  state: {
+    get rowSelection() {
+      return rowSelection.value;
+    },
+  },
 });
 
 const handleAddRow = () => {
@@ -122,6 +155,18 @@ const handleEdit = (row: CsvRow) => {
 const handleDelete = (id: string) => {
   tableData.value = tableData.value.filter(row => row.id !== id);
   showSuccessToast('Row deleted successfully!');
+  rowSelection.value = {}; // Clear selection after deletion
+};
+
+const handleDeleteSelected = () => {
+  const selectedIds = Object.keys(rowSelection.value).filter(key => rowSelection.value[key]);
+  if (selectedIds.length === 0) {
+    showInfoToast('No rows selected for deletion.');
+    return;
+  }
+  tableData.value = tableData.value.filter(row => !selectedIds.includes(row.id));
+  showSuccessToast(`${selectedIds.length} row(s) deleted successfully!`);
+  rowSelection.value = {}; // Clear selection after deletion
 };
 
 const handleSaveRow = (newRowData: Record<string, string>) => {
@@ -145,7 +190,9 @@ const handleExportCsv = () => {
     showInfoToast('No data to export.');
     return;
   }
-  const csv = Papa.unparse(tableData.value);
+  // Exclude the 'id' column from the exported CSV
+  const dataToExport = tableData.value.map(({ id, ...rest }) => rest);
+  const csv = Papa.unparse(dataToExport);
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
@@ -162,6 +209,13 @@ const handleExportCsv = () => {
     <div class="flex justify-between mb-4">
       <Button @click="handleAddRow">Add New Row</Button>
       <div class="flex space-x-2">
+        <Button
+          variant="destructive"
+          :disabled="Object.keys(rowSelection).filter(key => rowSelection[key]).length === 0"
+          @click="handleDeleteSelected"
+        >
+          Delete Selected ({{ Object.keys(rowSelection).filter(key => rowSelection[key]).length }})
+        </Button>
         <Button variant="outline" @click="handleExportCsv">Export CSV</Button>
       </div>
     </div>
@@ -184,6 +238,7 @@ const handleExportCsv = () => {
             <TableRow
               v-for="row in table.getRowModel().rows"
               :key="row.id"
+              :data-state="row.getIsSelected() && 'selected'"
             >
               <TableCell v-for="cell in row.getVisibleCells()" :key="cell.id">
                 <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
