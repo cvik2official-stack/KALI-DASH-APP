@@ -6,7 +6,7 @@ import {
   useVueTable,
   createColumnHelper,
   type ColumnDef,
-  getFilteredRowModel, // Added for filtering if needed, good practice
+  getFilteredRowModel,
 } from '@tanstack/vue-table';
 import {
   Table,
@@ -21,15 +21,16 @@ import { Trash2, Pencil } from 'lucide-vue-next';
 import AddEditCsvRowDialog from './AddEditCsvRowDialog.vue';
 import { showSuccessToast, showErrorToast, showInfoToast } from '@/lib/toast';
 import Papa from 'papaparse';
-import { Checkbox } from '@/components/ui/checkbox'; // Import Checkbox component
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface CsvRow {
   [key: string]: string;
-  id: string; // Add an ID for unique identification
+  id: string;
 }
 
 const props = defineProps<{
   initialData: CsvRow[];
+  visibleColumns: string[]; // New prop to control visible columns
 }>();
 
 const columnHelper = createColumnHelper<CsvRow>();
@@ -38,27 +39,27 @@ const tableData = ref<CsvRow[]>([]);
 const isAddEditDialogOpen = ref(false);
 const addEditDialogMode = ref<'add' | 'edit'>('add');
 const currentEditRow = ref<CsvRow | undefined>(undefined);
-const rowSelection = ref({}); // State for row selection
+const rowSelection = ref({});
 
-// Watch for changes in initialData and update tableData reactively
 watch(
   () => props.initialData,
   (newVal) => {
     tableData.value = newVal.map((row, index) => ({
       ...row,
-      id: row.id || String(index + 1), // Use existing ID or generate one
+      id: row.id || String(index + 1),
     }));
-    rowSelection.value = {}; // Reset selection when data changes
+    rowSelection.value = {};
   },
-  { immediate: true } // Run immediately on component mount
+  { immediate: true }
 );
 
 const columns = computed<ColumnDef<CsvRow, any>[]>(() => {
   if (tableData.value.length === 0) return [];
 
-  const firstRowKeys = Object.keys(tableData.value[0]).filter(key => key !== 'id'); // Exclude 'id' from display columns
+  // Filter columns based on visibleColumns prop
+  const filteredKeys = Object.keys(tableData.value[0]).filter(key => key !== 'id' && props.visibleColumns.includes(key));
 
-  const dynamicColumns = firstRowKeys.map(key =>
+  const dynamicColumns = filteredKeys.map(key =>
     columnHelper.accessor(key, {
       header: () => key.replace(/_/g, ' ').toUpperCase(),
       cell: info => h('div', { class: 'text-left' }, info.getValue()),
@@ -126,7 +127,7 @@ const table = useVueTable({
     return columns.value;
   },
   getCoreRowModel: getCoreRowModel(),
-  getFilteredRowModel: getFilteredRowModel(), // Added for filtering
+  getFilteredRowModel: getFilteredRowModel(),
   onRowSelectionChange: updaterOrValue => {
     rowSelection.value =
       typeof updaterOrValue === 'function'
@@ -155,7 +156,7 @@ const handleEdit = (row: CsvRow) => {
 const handleDelete = (id: string) => {
   tableData.value = tableData.value.filter(row => row.id !== id);
   showSuccessToast('Row deleted successfully!');
-  rowSelection.value = {}; // Clear selection after deletion
+  rowSelection.value = {};
 };
 
 const handleDeleteSelected = () => {
@@ -166,7 +167,7 @@ const handleDeleteSelected = () => {
   }
   tableData.value = tableData.value.filter(row => !selectedIds.includes(row.id));
   showSuccessToast(`${selectedIds.length} row(s) deleted successfully!`);
-  rowSelection.value = {}; // Clear selection after deletion
+  rowSelection.value = {};
 };
 
 const handleSaveRow = (newRowData: Record<string, string>) => {
@@ -190,7 +191,6 @@ const handleExportCsv = () => {
     showInfoToast('No data to export.');
     return;
   }
-  // Exclude the 'id' column from the exported CSV
   const dataToExport = tableData.value.map(({ id, ...rest }) => rest);
   const csv = Papa.unparse(dataToExport);
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -220,7 +220,7 @@ const handleExportCsv = () => {
       </div>
     </div>
 
-    <div class="rounded-md border">
+    <div class="rounded-md border overflow-auto">
       <Table>
         <TableHeader>
           <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
