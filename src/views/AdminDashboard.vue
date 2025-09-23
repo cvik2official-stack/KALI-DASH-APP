@@ -27,7 +27,7 @@ onMounted(async () => {
   showInfoToast('Loading CSV data...');
   try {
     const data = await loadCsvData('/data/grocery-list.csv');
-    csvData.value = data.map((row, index) => ({ ...row, id: row.id || String(index + 1) })); // Ensure each row has an ID
+    csvData.value = data as CsvRow[]; // Directly assign data, assuming NAME is present
     showSuccessToast('CSV data loaded successfully!');
   } catch (e: any) {
     error.value = e.message || 'Failed to load CSV data.';

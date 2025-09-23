@@ -11,6 +11,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { showErrorToast } from '@/lib/toast';
 
 interface Props {
   open: boolean;
@@ -36,7 +37,6 @@ watch(
       if (props.mode === 'edit' && props.initialData) {
         formData.value = { ...props.initialData };
       } else {
-        // Initialize with empty strings for all columns
         formData.value = props.columns.reduce((acc, col) => ({ ...acc, [col]: '' }), {});
       }
     }
@@ -45,6 +45,10 @@ watch(
 );
 
 const handleSave = () => {
+  if (!formData.value.NAME || formData.value.NAME.trim() === '') {
+    showErrorToast('Item Name cannot be empty.');
+    return;
+  }
   emit('save', formData.value);
   localOpen.value = false;
 };

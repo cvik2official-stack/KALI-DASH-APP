@@ -6,7 +6,6 @@ import {
   useVueTable,
   createColumnHelper,
   type ColumnDef,
-  type AccessorColumnDef,
 } from '@tanstack/vue-table';
 import {
   Table,
@@ -45,10 +44,7 @@ const columnVisibility = ref<Record<string, boolean>>({
 watch(
   () => props.initialData,
   (newVal) => {
-    tableData.value = newVal.map((row, index) => ({
-      ...row,
-      id: row.id || String(index + 1),
-    }));
+    tableData.value = newVal; // Directly assign, NAME is assumed to be present
   },
   { immediate: true }
 );
@@ -56,6 +52,7 @@ watch(
 const columns = computed<ColumnDef<CsvRow, any>[]>(() => {
   if (tableData.value.length === 0) return [];
 
+  // Filter out 'id' if it somehow appears, and ensure 'NAME' is always included
   const firstRowKeys = Object.keys(tableData.value[0]).filter(key => key !== 'id');
 
   const dynamicColumns = firstRowKeys.map(key =>
@@ -77,7 +74,7 @@ const columns = computed<ColumnDef<CsvRow, any>[]>(() => {
         id: 'select',
         header: () => h('div', { class: 'text-center' }, 'Select'),
         cell: ({ row }) => {
-          const isSelected = props.cartItems.some(item => item.id === row.original.id);
+          const isSelected = props.cartItems.some(item => item.NAME === row.original.NAME);
           return h('input', {
             type: 'checkbox',
             checked: isSelected,
@@ -122,7 +119,7 @@ const columns = computed<ColumnDef<CsvRow, any>[]>(() => {
               variant: 'destructive',
               size: 'icon',
               class: 'h-8 w-8 p-0',
-              onClick: () => handleDelete(originalRow.id),
+              onClick: () => handleDelete(originalRow.NAME),
             },
             () => h(Trash2, { class: 'h-4 w-4' })
           ),
@@ -162,20 +159,31 @@ const handleEdit = (row: CsvRow) => {
   isAddEditDialogOpen.value = true;
 };
 
-const handleDelete = (id: string) => {
-  tableData.value = tableData.value.filter(row => row.id !== id);
+const handleDelete = (name: string) => {
+  tableData.value = tableData.value.filter(row => row.NAME !== name);
   showSuccessToast('Row deleted successfully!');
 };
 
 const handleSaveRow = (newRowData: Record<string, string>) => {
   if (addEditDialogMode.value === 'add') {
-    const newId = String(tableData.value.length > 0 ? Math.max(...tableData.value.map(r => Number(r.id))) + 1 : 1);
-    tableData.value.push({ ...newRowData, id: newId });
+    if (!newRowData.NAME || newRowData.NAME.trim() === '') {
+      showErrorToast('Item Name is required to add a new row.');
+      return;
+    }
+    if (tableData.value.some(row => row.NAME === newRowData.NAME)) {
+      showErrorToast('An item with this name already exists.');
+      return;
+    }
+    tableData.value.push({ ...newRowData, NAME: newRowData.NAME });
     showSuccessToast('Row added successfully!');
   } else if (addEditDialogMode.value === 'edit' && currentEditRow.value) {
-    const index = tableData.value.findIndex(row => row.id === currentEditRow.value?.id);
+    const index = tableData.value.findIndex(row => row.NAME === currentEditRow.value?.NAME);
     if (index !== -1) {
-      tableData.value[index] = { ...newRowData, id: currentEditRow.value.id };
+      if (newRowData.NAME !== currentEditRow.value.NAME && tableData.value.some((row, i) => i !== index && row.NAME === newRowData.NAME)) {
+        showErrorToast('An item with this name already exists.');
+        return;
+      }
+      tableData.value[index] = { ...newRowData, NAME: newRowData.NAME };
       showSuccessToast('Row updated successfully!');
     } else {
       showErrorToast('Failed to update row.');
@@ -226,7 +234,7 @@ const handleExportCsv = () => {
           <template v-if="table.getRowModel().rows?.length">
             <TableRow
               v-for="row in table.getRowModel().rows"
-              :key="row.id"
+              :key="row.original.NAME"
               :data-state="row.getIsSelected() && 'selected'"
             >
               <TableCell v-for="cell in row.getVisibleCells()" :key="cell.id">
