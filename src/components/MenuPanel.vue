@@ -15,6 +15,7 @@ import {
   HardDriveUpload,
   GitMerge,
   User,
+  ListTodo, // Import the new icon for To-Do List
 } from 'lucide-vue-next';
 </script>
 
@@ -26,7 +27,7 @@ import {
     </div>
 
     <nav class="flex-1 space-y-2">
-      <RouterLink to="/admin">
+      <RouterLink to="/">
         <Button variant="ghost" class="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
           <LayoutDashboard class="w-4 h-4 mr-2" />
           Tables
@@ -84,6 +85,12 @@ import {
       <Separator class="my-4 bg-sidebar-border" />
 
       <h3 class="text-xs font-semibold uppercase text-sidebar-foreground mb-2">User Space</h3>
+      <RouterLink to="/todo">
+        <Button variant="ghost" class="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+          <ListTodo class="w-4 h-4 mr-2" />
+          To-Do List
+        </Button>
+      </RouterLink>
       <Button variant="ghost" class="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
         <User class="w-4 h-4 mr-2" />
         My Files
