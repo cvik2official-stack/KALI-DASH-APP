@@ -4,7 +4,7 @@ import { RouterLink } from 'vue-router';
 import { Button } from '@/components/ui/button';
 import { loadCsvData } from '@/lib/csvUtils';
 import CsvTable from '@/components/CsvTable.vue';
-import { showInfoToast, showErrorToast } from '@/lib/toast';
+import { showInfoToast, showErrorToast, showSuccessToast } from '@/lib/toast';
 
 interface CsvRow {
   [key: string]: string;
@@ -17,7 +17,8 @@ const error = ref<string | null>(null);
 onMounted(async () => {
   showInfoToast('Loading CSV data...');
   try {
-    const data = await loadCsvData('/src/assets/data/grocery-list.csv');
+    // Updated path to fetch from the public directory
+    const data = await loadCsvData('/data/grocery-list.csv');
     csvData.value = data;
     showSuccessToast('CSV data loaded successfully!');
   } catch (e: any) {
