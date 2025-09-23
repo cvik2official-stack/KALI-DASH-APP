@@ -111,7 +111,7 @@ const columns = computed<ColumnDef<CsvRow, any>[]>(() => {
                   variant: 'ghost',
                   class: 'h-8 w-8 p-0',
                 },
-                () => h(MoreHorizontal, { class: 'h-4 w-4' })
+                () => h(MoreHorizontal, { class: 'h-4 w-4' }) // Ensure icon is rendered
               ),
             content: () => [
               h(DropdownMenuLabel, {}, () => 'Actions'),
@@ -206,7 +206,7 @@ const handleExportCsv = () => {
               View Columns
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align="end" class="z-50"> <!-- Added z-50 -->
             <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuCheckboxItem

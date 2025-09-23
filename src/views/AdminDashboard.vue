@@ -43,7 +43,7 @@ onMounted(async () => {
     <div class="w-full flex items-center justify-between mb-6">
       <Sheet v-model:open="isMenuOpen">
         <SheetTrigger as-child>
-          <Button variant="outline" size="icon" class="md:hidden">
+          <Button variant="outline" size="icon"> <!-- Removed md:hidden -->
             <Menu class="h-4 w-4" />
             <span class="sr-only">Open menu</span>
           </Button>
@@ -52,7 +52,7 @@ onMounted(async () => {
           <MenuPanel />
         </SheetContent>
       </Sheet>
-      <h1 class="text-4xl font-bold flex-1 text-center md:text-left md:ml-0">Admin Dashboard</h1>
+      <h1 class="text-4xl font-bold flex-1 text-center">Admin Dashboard</h1> <!-- Centered title -->
     </div>
     
     <p class="text-lg mb-8 text-center">Manage your CSV data below.</p>
