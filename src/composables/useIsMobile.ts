@@ -1,16 +1,18 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 
-const MOBILE_BREAKPOINT = 768;
+const MOBILE_BREAKPOINT = 768; // This means screens up to and including 768px will be considered mobile
 
 export function useIsMobile() {
   const isMobile = ref<boolean | undefined>(undefined);
 
   const updateIsMobile = () => {
-    isMobile.value = window.innerWidth < MOBILE_BREAKPOINT;
+    // Use <= to include the breakpoint itself in the mobile range
+    isMobile.value = window.innerWidth <= MOBILE_BREAKPOINT;
   };
 
   const setupMediaQuery = () => {
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
+    // Match media query for screens up to and including the breakpoint
+    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`);
 
     // Set initial value
     updateIsMobile();
