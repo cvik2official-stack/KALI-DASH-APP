@@ -5,13 +5,12 @@ import { Button } from '@/components/ui/button';
 import { loadCsvData } from '@/lib/csvUtils';
 import CsvTable from '@/components/CsvTable.vue';
 import { showInfoToast, showErrorToast, showSuccessToast } from '@/lib/toast';
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from '@/components/ui/sheet';
-import { Menu } from 'lucide-vue-next';
-import MenuPanel from '@/components/MenuPanel.vue';
+// Removed Sheet imports as it's no longer needed
+// import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+// Removed Menu icon import as it's no longer needed
+// import { Menu } from 'lucide-vue-next';
+// MenuPanel is no longer directly used in the header, but still exists if needed elsewhere
+// import MenuPanel from '@/components/MenuPanel.vue';
 import {
   Menubar,
   MenubarMenu,
@@ -25,7 +24,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ColumnSettings from '@/components/ColumnSettings.vue';
 import FileUploadTab from '@/components/FileUploadTab.vue';
 import PasteDataTab from '@/components/PasteDataTab.vue';
-import FetchFromUrlTab from '@/components/FetchFromUrlTab.vue'; // Import new component
+import FetchFromUrlTab from '@/components/FetchFromUrlTab.vue';
 
 interface CsvRow {
   [key: string]: string;
@@ -34,7 +33,8 @@ interface CsvRow {
 const csvData = ref<CsvRow[]>([]);
 const isLoading = ref(true);
 const error = ref<string | null>(null);
-const isMenuOpen = ref(false);
+// isMenuOpen state is no longer needed as the Sheet is removed
+// const isMenuOpen = ref(false);
 
 // State for column visibility
 const columnVisibility = ref<Record<string, boolean>>({});
@@ -70,8 +70,10 @@ const visibleColumns = computed(() => {
 
 <template>
   <div class="flex flex-col min-h-full">
+    <!-- Header with Menubar -->
     <header class="w-full flex items-center p-4 border-b">
-      <Sheet v-model:open="isMenuOpen">
+      <!-- Removed Sheet component and its trigger -->
+      <!-- <Sheet v-model:open="isMenuOpen">
         <SheetTrigger as-child>
           <Button variant="outline" size="icon" class="mr-4">
             <Menu class="h-4 w-4" />
@@ -81,9 +83,9 @@ const visibleColumns = computed(() => {
         <SheetContent side="left" class="p-0 w-64">
           <MenuPanel />
         </SheetContent>
-      </Sheet>
+      </Sheet> -->
 
-      <Menubar class="flex-1 justify-center border-none">
+      <Menubar class="flex-1 justify-start border-none"> <!-- Adjusted justify-center to justify-start -->
         <MenubarMenu>
           <MenubarTrigger>File</MenubarTrigger>
           <MenubarContent>
@@ -115,14 +117,15 @@ const visibleColumns = computed(() => {
       </Menubar>
     </header>
 
+    <!-- Main Content Area -->
     <main class="flex-1 flex flex-col p-4">
       <Tabs default-value="dataTable" class="flex-1 flex flex-col">
-        <TabsList class="grid w-full grid-cols-5"> <!-- Adjusted grid-cols to accommodate new tab -->
+        <TabsList class="grid w-full grid-cols-5">
           <TabsTrigger value="dataTable">Data Table</TabsTrigger>
           <TabsTrigger value="columnSettings">Column Settings</TabsTrigger>
           <TabsTrigger value="fileUpload">File Upload</TabsTrigger>
           <TabsTrigger value="pasteData">Paste Data</TabsTrigger>
-          <TabsTrigger value="fetchFromUrl">Fetch from URL</TabsTrigger> <!-- New Tab Trigger -->
+          <TabsTrigger value="fetchFromUrl">Fetch from URL</TabsTrigger>
         </TabsList>
         <TabsContent value="dataTable" class="flex-1 flex flex-col mt-4">
           <div v-if="isLoading" class="text-xl text-gray-600 dark:text-gray-300 text-center">Loading data...</div>
@@ -145,7 +148,7 @@ const visibleColumns = computed(() => {
         <TabsContent value="pasteData" class="flex-1 flex flex-col mt-4">
           <PasteDataTab />
         </TabsContent>
-        <TabsContent value="fetchFromUrl" class="flex-1 flex flex-col mt-4"> <!-- New Tab Content -->
+        <TabsContent value="fetchFromUrl" class="flex-1 flex flex-col mt-4">
           <FetchFromUrlTab />
         </TabsContent>
       </Tabs>
