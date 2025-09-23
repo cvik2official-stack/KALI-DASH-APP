@@ -16,18 +16,10 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Trash2, Pencil, Settings2 } from 'lucide-vue-next'; // Removed MoreHorizontal
+import { Trash2, Pencil } from 'lucide-vue-next'; // Removed Settings2 and MoreHorizontal
 import AddEditCsvRowDialog from './AddEditCsvRowDialog.vue';
 import { showSuccessToast, showErrorToast, showInfoToast } from '@/lib/toast';
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+// Removed DropdownMenu imports as they are no longer needed for column visibility
 import { Checkbox } from '@/components/ui/checkbox';
 import Papa from 'papaparse';
 
@@ -46,11 +38,6 @@ const tableData = ref<CsvRow[]>([]);
 const isAddEditDialogOpen = ref(false);
 const addEditDialogMode = ref<'add' | 'edit'>('add');
 const currentEditRow = ref<CsvRow | undefined>(undefined);
-
-// Reactive state for column visibility
-const columnVisibility = ref<Record<string, boolean>>({
-  select: false, // Hide checkbox column by default
-});
 
 // Watch for changes in initialData and update tableData reactively
 watch(
@@ -73,7 +60,7 @@ const columns = computed<ColumnDef<CsvRow, any>[]>(() => {
     columnHelper.accessor(key, {
       header: () => key.replace(/_/g, ' ').toUpperCase(),
       cell: info => h('div', { class: 'text-left' }, info.getValue()), // Default left alignment
-      enableHiding: true, // Ensure dynamic columns can be hidden
+      enableHiding: false, // Hiding is no longer supported without the UI
     })
   );
 
@@ -92,7 +79,7 @@ const columns = computed<ColumnDef<CsvRow, any>[]>(() => {
           'onUpdate:checked': value => row.toggleSelected(!!value),
           ariaLabel: 'Select row',
         }),
-      enableHiding: true, // Allow hiding this column
+      enableHiding: false, // Hiding is no longer supported without the UI
     }),
     ...dynamicColumns,
     columnHelper.display({
@@ -136,14 +123,7 @@ const table = useVueTable({
     return columns.value;
   },
   getCoreRowModel: getCoreRowModel(),
-  state: {
-    columnVisibility, // Pass the reactive ref for column visibility
-  },
-  onColumnVisibilityChange: updater => {
-    // Update the reactive ref when the table's internal state changes
-    columnVisibility.value =
-      typeof updater === 'function' ? updater(columnVisibility.value) : updater;
-  },
+  // Removed columnVisibility state and onColumnVisibilityChange as the feature is removed
 });
 
 const handleAddRow = () => {
@@ -201,27 +181,7 @@ const handleExportCsv = () => {
     <div class="flex justify-between mb-4">
       <Button @click="handleAddRow">Add New Row</Button>
       <div class="flex space-x-2">
-        <DropdownMenu>
-          <DropdownMenuTrigger as-child>
-            <Button variant="outline" class="ml-auto">
-              <Settings2 class="w-4 h-4 mr-2" />
-              View Columns
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" class="z-50">
-            <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuCheckboxItem
-              v-for="column in table.getAllColumns().filter(column => column.getCanHide())"
-              :key="column.id"
-              :checked="column.getIsVisible()"
-              @update:checked="(value) => column.toggleVisibility(!!value)"
-              class="capitalize"
-            >
-              {{ column.id.replace(/_/g, ' ') }}
-            </DropdownMenuCheckboxItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <!-- Removed DropdownMenu for View Columns -->
         <Button variant="outline" @click="handleExportCsv">Export CSV</Button>
       </div>
     </div>
