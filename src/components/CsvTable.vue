@@ -18,7 +18,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Trash2, Pencil, MoreHorizontal, Settings2 } from 'lucide-vue-next';
 import AddEditCsvRowDialog from './AddEditCsvRowDialog.vue';
-import { showSuccessToast, showErrorToast } from '@/lib/toast';
+import { showSuccessToast, showErrorToast, showInfoToast } from '@/lib/toast';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -47,6 +47,11 @@ const isAddEditDialogOpen = ref(false);
 const addEditDialogMode = ref<'add' | 'edit'>('add');
 const currentEditRow = ref<CsvRow | undefined>(undefined);
 
+// Reactive state for column visibility
+const columnVisibility = ref<Record<string, boolean>>({
+  select: false, // Hide checkbox column by default
+});
+
 // Watch for changes in initialData and update tableData reactively
 watch(
   () => props.initialData,
@@ -68,6 +73,7 @@ const columns = computed<ColumnDef<CsvRow, any>[]>(() => {
     columnHelper.accessor(key, {
       header: () => key.replace(/_/g, ' ').toUpperCase(),
       cell: info => h('div', { class: 'text-left' }, info.getValue()), // Default left alignment
+      enableHiding: true, // Ensure dynamic columns can be hidden
     })
   );
 
@@ -115,6 +121,7 @@ const columns = computed<ColumnDef<CsvRow, any>[]>(() => {
           }
         );
       },
+      enableHiding: false, // Actions column should generally not be hidden
     }),
   ];
 });
@@ -127,10 +134,13 @@ const table = useVueTable({
     return columns.value;
   },
   getCoreRowModel: getCoreRowModel(),
-  initialState: {
-    columnVisibility: {
-      select: false, // Hide checkbox column by default
-    },
+  state: {
+    columnVisibility, // Pass the reactive ref for column visibility
+  },
+  onColumnVisibilityChange: updater => {
+    // Update the reactive ref when the table's internal state changes
+    columnVisibility.value =
+      typeof updater === 'function' ? updater(columnVisibility.value) : updater;
   },
 });
 

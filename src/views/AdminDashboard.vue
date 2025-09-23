@@ -39,8 +39,8 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="flex flex-col items-center justify-center min-h-full p-4 text-center">
-    <div class="w-full flex justify-between items-center mb-6">
+  <div class="flex flex-col min-h-full p-4">
+    <div class="w-full flex items-center justify-between mb-6">
       <Sheet v-model:open="isMenuOpen">
         <SheetTrigger as-child>
           <Button variant="outline" size="icon" class="md:hidden">
@@ -52,19 +52,19 @@ onMounted(async () => {
           <MenuPanel />
         </SheetContent>
       </Sheet>
-      <h1 class="text-4xl font-bold flex-1">Admin Dashboard</h1>
+      <h1 class="text-4xl font-bold flex-1 text-center md:text-left md:ml-0">Admin Dashboard</h1>
     </div>
     
-    <p class="text-lg mb-8">Manage your CSV data below.</p>
+    <p class="text-lg mb-8 text-center">Manage your CSV data below.</p>
 
-    <div v-if="isLoading" class="text-xl text-gray-600 dark:text-gray-300">Loading data...</div>
-    <div v-else-if="error" class="text-xl text-red-600 dark:text-red-400">Error: {{ error }}</div>
-    <div v-else-if="csvData.length > 0" class="w-full max-w-4xl">
+    <div v-if="isLoading" class="text-xl text-gray-600 dark:text-gray-300 text-center">Loading data...</div>
+    <div v-else-if="error" class="text-xl text-red-600 dark:text-red-400 text-center">Error: {{ error }}</div>
+    <div v-else-if="csvData.length > 0" class="w-full max-w-4xl mx-auto">
       <CsvTable :initial-data="csvData" />
     </div>
-    <div v-else class="text-xl text-gray-600 dark:text-gray-300">No CSV data available.</div>
+    <div v-else class="text-xl text-gray-600 dark:text-gray-300 text-center">No CSV data available.</div>
 
-    <RouterLink to="/" class="mt-8">
+    <RouterLink to="/" class="mt-8 mx-auto">
       <Button variant="outline">Back to Home</Button>
     </RouterLink>
   </div>
