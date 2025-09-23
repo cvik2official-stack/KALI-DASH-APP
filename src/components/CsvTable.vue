@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, watch, h } from 'vue';
 import {
   FlexRender,
   getCoreRowModel,
   useVueTable,
   createColumnHelper,
+  type ColumnDef,
 } from '@tanstack/vue-table';
 import {
   Table,
@@ -35,15 +36,19 @@ const isAddEditDialogOpen = ref(false);
 const addEditDialogMode = ref<'add' | 'edit'>('add');
 const currentEditRow = ref<CsvRow | undefined>(undefined);
 
-onMounted(() => {
-  // Assign unique IDs to initial data for CRUD operations
-  tableData.value = props.initialData.map((row, index) => ({
-    ...row,
-    id: row.id || String(index + 1), // Use existing ID or generate one
-  }));
-});
+// Watch for changes in initialData and update tableData reactively
+watch(
+  () => props.initialData,
+  (newVal) => {
+    tableData.value = newVal.map((row, index) => ({
+      ...row,
+      id: row.id || String(index + 1), // Use existing ID or generate one
+    }));
+  },
+  { immediate: true } // Run immediately on component mount
+);
 
-const columns = computed(() => {
+const columns = computed<ColumnDef<CsvRow, any>[]>(() => {
   if (tableData.value.length === 0) return [];
 
   const firstRowKeys = Object.keys(tableData.value[0]).filter(key => key !== 'id'); // Exclude 'id' from display columns
@@ -83,7 +88,9 @@ const table = useVueTable({
   get data() {
     return tableData.value;
   },
-  columns,
+  get columns() { // Ensure columns are reactively provided as a getter
+    return columns.value;
+  },
   getCoreRowModel: getCoreRowModel(),
 });
 
@@ -119,9 +126,6 @@ const handleSaveRow = (newRowData: Record<string, string>) => {
     }
   }
 };
-
-// Helper for rendering icons in JSX/TSX context
-import { h } from 'vue';
 </script>
 
 <template>
