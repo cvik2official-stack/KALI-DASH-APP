@@ -5,6 +5,13 @@ import { Button } from '@/components/ui/button';
 import { loadCsvData } from '@/lib/csvUtils';
 import CsvTable from '@/components/CsvTable.vue';
 import { showInfoToast, showErrorToast, showSuccessToast } from '@/lib/toast';
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from '@/components/ui/sheet';
+import { Menu } from 'lucide-vue-next';
+import MenuPanel from '@/components/MenuPanel.vue'; // Import MenuPanel
 
 interface CsvRow {
   [key: string]: string;
@@ -13,6 +20,7 @@ interface CsvRow {
 const csvData = ref<CsvRow[]>([]);
 const isLoading = ref(true);
 const error = ref<string | null>(null);
+const isMenuOpen = ref(false); // State to control the sheet
 
 onMounted(async () => {
   showInfoToast('Loading CSV data...');
@@ -32,7 +40,21 @@ onMounted(async () => {
 
 <template>
   <div class="flex flex-col items-center justify-center min-h-full p-4 text-center">
-    <h1 class="text-4xl font-bold mb-6">Admin Dashboard</h1>
+    <div class="w-full flex justify-between items-center mb-6">
+      <Sheet v-model:open="isMenuOpen">
+        <SheetTrigger as-child>
+          <Button variant="outline" size="icon" class="md:hidden">
+            <Menu class="h-4 w-4" />
+            <span class="sr-only">Open menu</span>
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="left" class="p-0 w-64">
+          <MenuPanel />
+        </SheetContent>
+      </Sheet>
+      <h1 class="text-4xl font-bold flex-1">Admin Dashboard</h1>
+    </div>
+    
     <p class="text-lg mb-8">Manage your CSV data below.</p>
 
     <div v-if="isLoading" class="text-xl text-gray-600 dark:text-gray-300">Loading data...</div>
