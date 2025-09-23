@@ -20,7 +20,7 @@ const csvData = ref<CsvRow[]>([]);
 const isLoading = ref(true);
 const error = ref<string | null>(null);
 const isMenuOpen = ref(false);
-const isOrderMode = ref(false); // New state for order mode
+const isOrderMode = ref(true); // Changed to true to make it active by default
 const cartItems = ref<CartItem[]>([]); // New state for cart items
 
 onMounted(async () => {
