@@ -16,7 +16,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Trash2, Pencil, MoreHorizontal, Settings2 } from 'lucide-vue-next';
+import { Trash2, Pencil, Settings2 } from 'lucide-vue-next'; // Removed MoreHorizontal
 import AddEditCsvRowDialog from './AddEditCsvRowDialog.vue';
 import { showSuccessToast, showErrorToast, showInfoToast } from '@/lib/toast';
 import {
@@ -100,26 +100,28 @@ const columns = computed<ColumnDef<CsvRow, any>[]>(() => {
       header: () => 'Actions',
       cell: ({ row }) => {
         const originalRow = row.original;
-        return h(
-          DropdownMenu,
-          {},
-          {
-            trigger: () =>
-              h(
-                Button,
-                {
-                  variant: 'ghost',
-                  class: 'h-8 w-8 p-0',
-                },
-                () => h(MoreHorizontal, { class: 'h-4 w-4' }) // Ensure icon is rendered
-              ),
-            content: () => [
-              h(DropdownMenuLabel, {}, () => 'Actions'),
-              h(DropdownMenuItem, { onClick: () => handleEdit(originalRow) }, () => 'Edit'),
-              h(DropdownMenuItem, { onClick: () => handleDelete(originalRow.id) }, () => 'Delete'),
-            ],
-          }
-        );
+        return h('div', { class: 'flex space-x-2' }, [
+          h(
+            Button,
+            {
+              variant: 'outline',
+              size: 'icon',
+              class: 'h-8 w-8 p-0',
+              onClick: () => handleEdit(originalRow),
+            },
+            () => h(Pencil, { class: 'h-4 w-4' })
+          ),
+          h(
+            Button,
+            {
+              variant: 'destructive',
+              size: 'icon',
+              class: 'h-8 w-8 p-0',
+              onClick: () => handleDelete(originalRow.id),
+            },
+            () => h(Trash2, { class: 'h-4 w-4' })
+          ),
+        ]);
       },
       enableHiding: false, // Actions column should generally not be hidden
     }),
@@ -206,7 +208,7 @@ const handleExportCsv = () => {
               View Columns
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" class="z-50"> <!-- Added z-50 -->
+          <DropdownMenuContent align="end" class="z-50">
             <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuCheckboxItem
