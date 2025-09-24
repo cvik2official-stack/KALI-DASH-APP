@@ -16,7 +16,7 @@ import { showErrorToast } from '@/lib/toast';
 interface Props {
   open: boolean;
   mode: 'add' | 'edit';
-  initialData?: Record<string, string | number>; // Updated to accept string | number
+  initialData?: Record<string, string | number>; // Corrected to accept string | number
   columns: string[];
 }
 
@@ -28,7 +28,7 @@ const localOpen = computed({
   set: (value) => emit('update:open', value),
 });
 
-const formData = ref<Record<string, string>>({}); // Changed to string for v-model compatibility
+const formData = ref<Record<string, string>>({}); // Input v-model expects string
 
 watch(
   () => props.open,
