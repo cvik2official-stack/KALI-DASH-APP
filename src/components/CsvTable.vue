@@ -80,18 +80,14 @@ const columns = computed<ColumnDef<CsvRow, any>[]>(() => {
             type: 'checkbox',
             checked: isSelected,
             class: 'form-checkbox h-4 w-4 text-primary rounded cursor-pointer',
-            onChange: (event: Event) => {
+            onClick: (event: Event) => {
               const target = event.target as HTMLInputElement;
               event.stopPropagation();
-              event.stopPropagation();
-              event.preventDefault();
-              if (target.checked) {
+              if (!isSelected) {
                 emit('item-added-to-cart', row.original);
               } else {
                 emit('item-removed-from-cart', row.original);
               }
-              // Manually toggle the checkbox state
-              target.checked = !isSelected;
             },
           });
         },
