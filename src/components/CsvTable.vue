@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, h } from 'vue'; // Removed 'reactive' as we're using ref for columnVisibility
+import { ref, computed, watch, h } from 'vue';
 import {
   FlexRender,
   getCoreRowModel,
@@ -29,7 +29,8 @@ const props = defineProps<{
   cartItems: CartItem[];
 }>();
 
-const emit = emit('item-added-to-cart', 'item-removed-from-cart');
+// CORRECTED: Use defineEmits for event declarations
+const emit = defineEmits(['item-added-to-cart', 'item-removed-from-cart']);
 
 const columnHelper = createColumnHelper<CsvRow>();
 
@@ -208,7 +209,6 @@ const handleExportCsv = () => {
   showSuccessToast('Data exported successfully!');
 };
 
-// dialogInitialData can now directly be currentEditRow.value as the dialog will accept string | number
 const dialogInitialData = computed<Record<string, string | number> | undefined>(() => {
   return currentEditRow.value;
 });
