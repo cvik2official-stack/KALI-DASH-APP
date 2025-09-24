@@ -42,42 +42,6 @@ const currentEditRow = ref<CsvRow | undefined>(undefined);
 // Initialize columnVisibility as a ref with explicit VisibilityState type
 const columnVisibility = ref<VisibilityState>({});
 
-// Add state for select all functionality
-const isAllSelected = computed(() => {
-  if (!props.isOrderMode || tableData.value.length === 0) return false;
-  return tableData.value.every(item => 
-    props.cartItems.some(cartItem => cartItem.NAME === item.NAME)
-  );
-});
-
-const isIndeterminate = computed(() => {
-  if (!props.isOrderMode || tableData.value.length === 0) return false;
-  const selectedCount = tableData.value.filter(item => 
-    props.cartItems.some(cartItem => cartItem.NAME === item.NAME)
-  ).length;
-  return selectedCount > 0 && selectedCount < tableData.value.length;
-});
-
-const handleSelectAll = (checked: boolean) => {
-  if (checked) {
-    // Add all items that aren't already in cart
-    tableData.value.forEach(item => {
-      const isAlreadyInCart = props.cartItems.some(cartItem => cartItem.NAME === item.NAME);
-      if (!isAlreadyInCart) {
-        emit('item-added-to-cart', item);
-      }
-    });
-  } else {
-    // Remove all items from cart
-    tableData.value.forEach(item => {
-      const isInCart = props.cartItems.some(cartItem => cartItem.NAME === item.NAME);
-      if (isInCart) {
-        emit('item-removed-from-cart', item);
-      }
-    });
-  }
-};
-
 watch(
   () => props.initialData,
   (newVal) => {
@@ -109,24 +73,13 @@ const columns = computed<ColumnDef<CsvRow, any>[]>(() => {
     return [
       columnHelper.display({
         id: 'select',
-        header: () => h('div', { class: 'flex items-center justify-center' }, [
-          h('input', {
-            type: 'checkbox',
-            checked: isAllSelected.value,
-            indeterminate: isIndeterminate.value,
-            class: 'form-checkbox h-4 w-4 text-primary rounded',
-            onInput: (event: Event) => {
-              const target = event.target as HTMLInputElement;
-              handleSelectAll(target.checked);
-            },
-          }),
-        ]),
+        header: () => h('div', { class: 'flex items-center justify-center' }, 'Select'),
         cell: ({ row }) => {
           const isSelected = props.cartItems.some(item => item.NAME === row.original.NAME);
           return h('input', {
             type: 'checkbox',
             checked: isSelected,
-            class: 'form-checkbox h-4 w-4 text-primary rounded',
+            class: 'form-checkbox h-4 w-4 text-primary rounded cursor-pointer',
             onInput: (event: Event) => {
               const target = event.target as HTMLInputElement;
               if (target.checked) {
