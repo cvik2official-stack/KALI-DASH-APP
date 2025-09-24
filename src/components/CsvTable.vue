@@ -140,7 +140,7 @@ const table = useVueTable({
   },
   getCoreRowModel: getCoreRowModel(),
   state: {
-    columnVisibility, // Pass the ref directly
+    columnVisibility: columnVisibility.value, // Unwrap the ref here
   },
   onColumnVisibilityChange: updater => {
     columnVisibility.value =

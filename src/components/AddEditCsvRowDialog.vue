@@ -21,14 +21,14 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-const emit = emit('update:open', 'save');
+const emit = defineEmits(['update:open', 'save']);
 
 const localOpen = computed({
   get: () => props.open,
   set: (value) => emit('update:open', value),
 });
 
-const formData = ref<Record<string, string | number>>({});
+const formData = ref<Record<string, string>>({}); // Changed to string for v-model compatibility
 
 watch(
   () => props.open,
@@ -52,7 +52,14 @@ const handleSave = () => {
     showErrorToast('Item Name cannot be empty.');
     return;
   }
-  emit('save', formData.value);
+  // Convert back to string | number for saving if necessary, or handle type conversion in parent
+  const dataToSave: Record<string, string | number> = {};
+  for (const key in formData.value) {
+    const value = formData.value[key];
+    // Attempt to convert to number if it looks like a number, otherwise keep as string
+    dataToSave[key] = isNaN(Number(value)) || value === '' ? value : Number(value);
+  }
+  emit('save', dataToSave);
   localOpen.value = false;
 };
 </script>
