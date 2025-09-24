@@ -6,6 +6,7 @@ import {
   useVueTable,
   createColumnHelper,
   type ColumnDef,
+  type VisibilityState, // Import VisibilityState
 } from '@tanstack/vue-table';
 import {
   Table,
@@ -37,9 +38,7 @@ const isAddEditDialogOpen = ref(false);
 const addEditDialogMode = ref<'add' | 'edit'>('add');
 const currentEditRow = ref<CsvRow | undefined>(undefined);
 
-const columnVisibility = ref<Record<string, boolean>>({
-  select: false,
-});
+const columnVisibility = ref<VisibilityState>({}); // Explicitly type as VisibilityState
 
 watch(
   () => props.initialData,
@@ -140,7 +139,7 @@ const table = useVueTable({
   },
   getCoreRowModel: getCoreRowModel(),
   state: {
-    columnVisibility: columnVisibility.value, // Unwrap the ref here
+    get columnVisibility() { return columnVisibility.value; }, // Use a getter for columnVisibility
   },
   onColumnVisibilityChange: updater => {
     columnVisibility.value =
@@ -207,6 +206,16 @@ const handleExportCsv = () => {
   document.body.removeChild(link);
   showSuccessToast('Data exported successfully!');
 };
+
+// Computed property to convert currentEditRow values to string for the dialog
+const dialogInitialData = computed<Record<string, string> | undefined>(() => {
+  if (!currentEditRow.value) return undefined;
+  const data: Record<string, string> = {};
+  for (const key in currentEditRow.value) {
+    data[key] = String(currentEditRow.value[key]);
+  }
+  return data;
+});
 </script>
 
 <template>
@@ -257,7 +266,7 @@ const handleExportCsv = () => {
     <AddEditCsvRowDialog
       v-model:open="isAddEditDialogOpen"
       :mode="addEditDialogMode"
-      :initial-data="currentEditRow"
+      :initial-data="dialogInitialData"
       :columns="Object.keys(tableData[0] || {}).filter(key => key !== 'id')"
       @save="handleSaveRow"
     />
