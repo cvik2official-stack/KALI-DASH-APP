@@ -80,8 +80,9 @@ const columns = computed<ColumnDef<CsvRow, any>[]>(() => {
             type: 'checkbox',
             checked: isSelected,
             class: 'form-checkbox h-4 w-4 text-primary rounded cursor-pointer',
-            onClick: (event: Event) => {
+            onChange: (event: Event) => {
               const target = event.target as HTMLInputElement;
+              event.stopPropagation();
               event.stopPropagation();
               event.preventDefault();
               if (target.checked) {
