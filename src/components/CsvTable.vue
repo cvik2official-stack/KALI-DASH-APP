@@ -6,7 +6,7 @@ import {
   useVueTable,
   createColumnHelper,
   type ColumnDef,
-  type VisibilityState, // Import VisibilityState
+  type VisibilityState,
 } from '@tanstack/vue-table';
 import {
   Table,
@@ -38,7 +38,8 @@ const isAddEditDialogOpen = ref(false);
 const addEditDialogMode = ref<'add' | 'edit'>('add');
 const currentEditRow = ref<CsvRow | undefined>(undefined);
 
-const columnVisibility = ref<VisibilityState>({}); // Explicitly type as VisibilityState
+// Explicitly type columnVisibility with an assertion for the initial empty object
+const columnVisibility = ref<VisibilityState>({} as VisibilityState);
 
 watch(
   () => props.initialData,
@@ -139,7 +140,7 @@ const table = useVueTable({
   },
   getCoreRowModel: getCoreRowModel(),
   state: {
-    get columnVisibility() { return columnVisibility.value; }, // Use a getter for columnVisibility
+    get columnVisibility() { return columnVisibility.value; },
   },
   onColumnVisibilityChange: updater => {
     columnVisibility.value =
@@ -214,7 +215,7 @@ const dialogInitialData = computed<Record<string, string> | undefined>(() => {
   for (const key in currentEditRow.value) {
     data[key] = String(currentEditRow.value[key]);
   }
-  return data;
+  return data as Record<string, string>; // Explicitly assert the type here
 });
 </script>
 
