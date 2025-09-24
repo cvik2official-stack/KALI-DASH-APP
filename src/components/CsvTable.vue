@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, h, reactive } from 'vue'; // Import reactive
+import { ref, computed, watch, h } from 'vue'; // Removed 'reactive' as we're using ref for columnVisibility
 import {
   FlexRender,
   getCoreRowModel,
@@ -29,7 +29,7 @@ const props = defineProps<{
   cartItems: CartItem[];
 }>();
 
-const emit = defineEmits(['item-added-to-cart', 'item-removed-from-cart']);
+const emit = emit('item-added-to-cart', 'item-removed-from-cart');
 
 const columnHelper = createColumnHelper<CsvRow>();
 
@@ -38,8 +38,8 @@ const isAddEditDialogOpen = ref(false);
 const addEditDialogMode = ref<'add' | 'edit'>('add');
 const currentEditRow = ref<CsvRow | undefined>(undefined);
 
-// Initialize columnVisibility as a reactive object
-const columnVisibility = reactive<VisibilityState>({});
+// Initialize columnVisibility as a ref with explicit VisibilityState type
+const columnVisibility = ref<VisibilityState>({});
 
 watch(
   () => props.initialData,
@@ -140,10 +140,11 @@ const table = useVueTable({
   },
   getCoreRowModel: getCoreRowModel(),
   state: {
-    get columnVisibility() { return columnVisibility; }, // Pass the reactive object directly
+    get columnVisibility() { return columnVisibility.value; }, // Access the .value of the ref
   },
   onColumnVisibilityChange: updater => {
-    Object.assign(columnVisibility, typeof updater === 'function' ? updater(columnVisibility) : updater);
+    columnVisibility.value =
+      typeof updater === 'function' ? updater(columnVisibility.value) : updater;
   },
 });
 
