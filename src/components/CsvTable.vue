@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, h } from 'vue';
+import { ref, computed, watch, h, reactive } from 'vue'; // Import reactive
 import {
   FlexRender,
   getCoreRowModel,
@@ -38,8 +38,8 @@ const isAddEditDialogOpen = ref(false);
 const addEditDialogMode = ref<'add' | 'edit'>('add');
 const currentEditRow = ref<CsvRow | undefined>(undefined);
 
-// Explicitly type columnVisibility with an assertion for the initial empty object
-const columnVisibility = ref<VisibilityState>({} as VisibilityState);
+// Initialize columnVisibility as a reactive object
+const columnVisibility = reactive<VisibilityState>({});
 
 watch(
   () => props.initialData,
@@ -140,11 +140,10 @@ const table = useVueTable({
   },
   getCoreRowModel: getCoreRowModel(),
   state: {
-    get columnVisibility() { return columnVisibility.value; },
+    get columnVisibility() { return columnVisibility; }, // Pass the reactive object directly
   },
   onColumnVisibilityChange: updater => {
-    columnVisibility.value =
-      typeof updater === 'function' ? updater(columnVisibility.value) : updater;
+    Object.assign(columnVisibility, typeof updater === 'function' ? updater(columnVisibility) : updater);
   },
 });
 
@@ -208,14 +207,9 @@ const handleExportCsv = () => {
   showSuccessToast('Data exported successfully!');
 };
 
-// Computed property to convert currentEditRow values to string for the dialog
-const dialogInitialData = computed<Record<string, string> | undefined>(() => {
-  if (!currentEditRow.value) return undefined;
-  const data: Record<string, string> = {};
-  for (const key in currentEditRow.value) {
-    data[key] = String(currentEditRow.value[key]);
-  }
-  return data as Record<string, string>; // Explicitly assert the type here
+// dialogInitialData can now directly be currentEditRow.value as the dialog will accept string | number
+const dialogInitialData = computed<Record<string, string | number> | undefined>(() => {
+  return currentEditRow.value;
 });
 </script>
 

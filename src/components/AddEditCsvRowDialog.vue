@@ -16,7 +16,7 @@ import { showErrorToast } from '@/lib/toast';
 interface Props {
   open: boolean;
   mode: 'add' | 'edit';
-  initialData?: Record<string, string | number>;
+  initialData?: Record<string, string | number>; // Updated to accept string | number
   columns: string[];
 }
 

@@ -16,7 +16,8 @@ import OrderSelectionSheet from '@/components/OrderSelectionSheet.vue'; // Impor
 
 const csvData = ref<CsvRow[]>([]);
 const isLoading = ref(true);
-const error = ref<string | null>(null);
+// Change error to always be a string, initialized as an empty string
+const error = ref<string>(''); 
 const isMenuOpen = ref(false);
 
 // New state for the order selection sheet
@@ -72,6 +73,7 @@ const handleCreateOrder = () => {
     
     <div class="flex-1 flex flex-col mt-4">
       <div v-if="isLoading" class="text-xl text-gray-600 dark:text-gray-300 text-center">Loading data...</div>
+      <!-- Check if error.value has content before displaying -->
       <div v-else-if="error" class="text-xl text-red-600 dark:text-red-400 text-center">Error: {{ error }}</div>
       <div v-else-if="csvData.length > 0" class="w-full max-w-4xl mx-auto flex-1">
         <CsvTable
